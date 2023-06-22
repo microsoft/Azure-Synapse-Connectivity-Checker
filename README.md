@@ -1,6 +1,6 @@
 # Project
 
-> Script to test Synapse connectivity endpoints and Ports needed
+Script to test Synapse connectivity endpoints and Ports needed
     - Check Windows HOST File entries
     - Check DNS configuration
     - Check name resolution for all possible endpoints used by Synapse
@@ -11,7 +11,7 @@
         - Try to connect to SQL and SQLOndemand APIs using port 1433
 
 ## Requirements
-    - IF want to run as script
+    - If want to run as script, might need
         - Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
     -Import-Module DnsClient
     -Import-Module Az.Accounts -MinimumVersion 2.2.0
@@ -26,9 +26,9 @@ The software may collect anonymous information about you and your use of the sof
 
 ### Option 1
     - Open Powershell ISE
-    - Copy and paste script
+    - Copy and paste script (Synapse-TestConnection.ps1)
     - Change variables
-      - $WorkspaceName = 'fonsecanetsynapse' # Enter your Synapse Workspace name. Not FQDN just name
+      - $WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
       - $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
       - $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
       - $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
@@ -37,22 +37,22 @@ The software may collect anonymous information about you and your use of the sof
     - Execute the script
 
 ### Option 2
-    - Copy ps1 script to a folder
+    - Copy (Synapse-TestConnection.ps1) script file to a folder
 
     - On Powershell copy below script 
 
-    ```Powershell
-$parameters = @{
-    WorkspaceName = 'WORKSPACENAME' # or any other supported FQDN
-    SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Set the name of the database you wish to test, 'master' will be used by default if nothing is set
-    DedicatedSQLPoolDBName = ''  # Set the login username you wish to use, 'AzSQLConnCheckerUser' will be used by default if nothing is set
-    ServerlessPoolDBName = ''  # Set the login password you wish to use, 'AzSQLConnCheckerPassword' will be used by default if nothing is set
-    DisableAnonymousTelemetry = $false  # Set as $true (default) or $false
-}
-
-$FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
-Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath -Raw))) -ArgumentList $parameters
-    ```
+        #------------------------------------------------------------------------------------------------------------------------------------------------------------
+        $parameters = @{
+            WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+            SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+            DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+            ServerlessPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+            DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+        }
+        
+        $FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
+        Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath -Raw))) -ArgumentList $parameters
+        #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     - Change variables
 
