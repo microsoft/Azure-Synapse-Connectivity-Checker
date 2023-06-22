@@ -29,9 +29,43 @@ The software may collect anonymous information about you and your use of the sof
 
 ## Execution
 
-### Option 1
+### Option 1 - Execute last version directly from WEB (Require internet connection)
+
+    - Open Powershell ISE copy below script 
+
+      #------------------------------------------------------------------------------------------------------------------------------------------------------------
+      ProgressPreference = "SilentlyContinue";
+      $parameters = @{
+            WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+            SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+            DedicatedSQLPoolDBName = ''  
+            ServerlessPoolDBName = ''  
+            DisableAnonymousTelemetry = $false  
+      }
+      $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Synapse-TestConnection.ps1'
+      cls
+      Write-Host 'Trying to download the script file from GitHub (https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/), please wait...'
+      try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+            Invoke-Command -ScriptBlock ([Scriptblock]::Create((Invoke-WebRequest ($scriptUrl) -UseBasicParsing -TimeoutSec 60).Content)) -ArgumentList $parameters
+      }
+      catch {
+            Write-Host 'ERROR: The script file could not be downloaded:' -ForegroundColor Red
+            $_.Exception
+            Write-Host 'Confirm this machine can access https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/' -ForegroundColor Yellow
+            Write-Host 'or use a machine with Internet access to see how to run this from machines without Internet.' -ForegroundColor Yellow
+      }
+      #------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    - Change variables
+
+    - Execute the script
+
+
+
+### Option 2 - Download and Run
     - Open Powershell ISE
-    - Copy and paste script (Synapse-TestConnection.ps1)
+    - Copy / Past content of script (Synapse-TestConnection.ps1)
     - Change variables
       - $WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
       - $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
@@ -41,7 +75,7 @@ The software may collect anonymous information about you and your use of the sof
 
     - Execute the script
 
-### Option 2
+### Option 3 - Run locally but with parameters (Best when need to run multiple times / automation)
     - Copy (Synapse-TestConnection.ps1) script file to a folder
 
     - On Powershell copy below script 
