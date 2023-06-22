@@ -24,8 +24,9 @@
     - Check name resolution for all possible endpoints used by Synapse and compare it with public DNS
     - Check if ports needed are open (1433 / 1443 / 443)
     - Check Internet and Self Hosted IR proxy that change name resolution from local machine to proxy
-    - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
-    - Try to connect to SQL and SQLOndemand APIs using port 1433
+    - To make this test it might open AD auth / MFA / to be able to make tests below (Connect-AzAccount -Subscription $SubscriptionID)
+        - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
+        - Try to connect to SQL and SQLOndemand APIs using port 1433
     
     REQUIRES
         IF want to run as script
@@ -37,9 +38,18 @@
             - Install-Module -Name SqlServer -Repository PSGallery -Force"
 
 
+
 .PARAMETER WorkspaceName
+    Enter your Synapse Workspace name. Not FQDN just name
 
 .PARAMETER SubscriptionID
+    Subscription ID where Synapse Workspace is located
+
+.PARAMETER DedicatedSQLPoolDBName
+    Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+
+.PARAMETER ServerlessPoolDBName
+    Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
 
 .PARAMETER DisableAnonymousTelemetry
 If you enable this swith no anonymous information will be sent to Microsoft
@@ -56,22 +66,41 @@ ADDITIONAL INFO
 
 #> 
 
-
 using namespace System.Net
 
-[CmdletBinding()]
-param (
-    [Parameter(Mandatory = $true, HelpMessage = "Enter your Synapse Workspace name.")]
-    [ValidateLength(1, 1024)]
-    [ValidatePattern("[\w-_]+")]
-    [string]
-    $WorkspaceName,
-    [Parameter(Mandatory = $true, HelpMessage = "Subscription ID")]
-    [ValidatePattern("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$")]    
-    [string]
-    $SubscriptionID,
-    [switch]$DisableAnonymousTelemetry
-)
+
+# Parameter region for when script is run directly
+$WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+$SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+$DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+$ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+
+# Optional parameters (default values will be used if omitted)
+$DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+
+# Parameter region when Invoke-Command is used
+$parameters = $args[0]
+
+if ($null -ne $parameters) {
+    $WorkspaceName = $parameters['WorkspaceName']
+    $SubscriptionID = $parameters['SubscriptionID']
+    $DedicatedSQLPoolDBName = $parameters['DedicatedSQLPoolDBName']
+    $ServerlessPoolDBName = $parameters['ServerlessPoolDBName']
+    $DisableAnonymousTelemetry = $parameters['DisableAnonymousTelemetry']
+}
+
+if([string]::IsNullOrEmpty($WorkspaceName) -or $WorkspaceName -eq "WORKSPACENAME") 
+{
+    Write-Error "ERROR:: WorkspaceName is mandatory"
+    Break
+}
+
+if([string]::IsNullOrEmpty($SubscriptionID) -or $SubscriptionID -eq "de41dc76-xxxx-xxxx-xxxx-xxxx") 
+{
+    Write-Error "ERROR:: SubscriptionID is mandatory"
+    Break
+}
+
 
 Clear-Host
 
@@ -86,6 +115,18 @@ Write-Host ("PS OS version: " + $psVersionTable.OS)
 Write-Host ("System.Environment OS version: " + [System.Environment]::OSVersion.Platform)
 Write-Host ("WorkspaceName: " + $WorkspaceName)
 Write-Host ("SubscriptionID: " + $SubscriptionID)
+
+if([string]::IsNullOrEmpty($DedicatedSQLPoolDBName)) 
+{
+    $DedicatedSQLPoolDBName = "master"
+}
+if([string]::IsNullOrEmpty($ServerlessPoolDBName)) 
+{
+    $ServerlessPoolDBName = "master"
+}
+
+Write-Host ("DedicatedSQLPoolDBName: " + $DedicatedSQLPoolDBName)
+Write-Host ("ServerlessPoolName: " + $ServerlessPoolDBName)
 
 
 
@@ -1013,9 +1054,31 @@ if ($DebugConnectToEndpoints)
                     if ($theError.Exception.Message -like "*Login failed for user '<token-identified principal>'*")
                     {
                         [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-                        [void]$Summary.AppendLine(">> - ERROR::($($ServerName)) Login failed for user '<token-identified principal>")
+                        [void]$Summary.AppendLine(">> - ERROR(ID01)::($($ServerName)) Login failed for user '<token-identified principal>")
                         [void]$Summary.AppendLine(">>   - CHECK")
                         [void]$Summary.AppendLine(">>     - https://techcommunity.microsoft.com/t5/azure-database-support-blog/aad-auth-error-login-failed-for-user-lt-token-identified/ba-p/1417535")
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine("")   
+                    }
+
+                    if ($theError.Exception.Message -like "*The server was not found or was not accessible*")
+                    {
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine(">> - ERROR(ID02)::($($ServerName)) The server was not found or was not accessible")
+                        [void]$Summary.AppendLine(">>   - CHECK")
+                        [void]$Summary.AppendLine(">>     - https://techcommunity.microsoft.com/t5/azure-synapse-analytics-blog/synapse-connectivity-series-part-1-inbound-sql-dw-connections-on/ba-p/3589170")
+                        [void]$Summary.AppendLine(">>     - https://techcommunity.microsoft.com/t5/azure-synapse-analytics-blog/synapse-connectivity-series-part-2-inbound-synapse-private/ba-p/3705160")
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine("")   
+                    }
+
+                    if ($theError.Exception.Message -like "*Client with IP address * is not allowed to access the server*")
+                    {
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine(">> - ERROR(ID03)::($($ServerName)) Client with IP address 'XXX.XXX.XXX.XXX' is not allowed to access the server")
+                        [void]$Summary.AppendLine(">>   - CHECK")
+                        [void]$Summary.AppendLine(">>     - https://techcommunity.microsoft.com/t5/azure-synapse-analytics-blog/synapse-connectivity-series-part-1-inbound-sql-dw-connections-on/ba-p/3589170")
+                        [void]$Summary.AppendLine(">>     - https://techcommunity.microsoft.com/t5/azure-synapse-analytics-blog/synapse-connectivity-series-part-2-inbound-synapse-private/ba-p/3705160")
                         [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
                         [void]$Summary.AppendLine("")   
                     }
@@ -1178,7 +1241,7 @@ if ($DebugConnectToEndpoints)
         if ($_.Exception.Response.StatusCode -eq "Forbidden") 
         {
             [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine(">> - ERROR:: Calling management endpoint (management.azure.com) on Port 443 failed")
+            [void]$Summary.AppendLine(">> - ERROR(ID04):: Calling management endpoint (management.azure.com) on Port 443 failed")
             [void]$Summary.AppendLine(">>   - You do not have permission to reach management.azure.com API")
             [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
             [void]$Summary.AppendLine("")
@@ -1211,8 +1274,13 @@ if ($DebugConnectToEndpoints)
 
         if ($_.Exception.Response.StatusCode -eq "Forbidden") {           
             [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine(">> - ERROR:: Calling Synapse DEV API ($($DevEndpoint)) on Port 443 failed")
+            [void]$Summary.AppendLine(">> - ERROR(ID05):: Calling Synapse DEV API ($($DevEndpoint)) on Port 443 failed")
             [void]$Summary.AppendLine(">>   - You do not have permission to reach Synapse DEV API ($($DevEndpoint))")
+            [void]$Summary.AppendLine(">>   - CHECK")
+            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-access-control-overview")
+            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac")
+            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac-roles")
+            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-understand-what-role-you-need")
             [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
             [void]$Summary.AppendLine("")
         }
@@ -1241,13 +1309,13 @@ if ($DebugConnectToEndpoints)
         $SQLEndpoint = "$($WorkspaceName).sql.azuresynapse.net"
     }
 
-    Write-Host "  -Testing SQL connection ($($SQLEndpoint)) / [MASTER] DB on Port 1433" -ForegroundColor DarkGray
+    Write-Host "  -Testing SQL connection ($($SQLEndpoint)) / [$($DedicatedSQLPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
 
     if ($null -ne $SQLEndpoint)
     {
         TestSQLConnection `
             -ServerName $SQLEndpoint `
-            -DatabaseName "master" `
+            -DatabaseName $DedicatedSQLPoolDBName `
             -SQLConnectionTimeout $SQLConnectionTimeout `
             -SQLQueryTimeout $SQLQueryTimeout `
             -SQL_token $SQL_token
@@ -1257,13 +1325,13 @@ if ($DebugConnectToEndpoints)
     #Testing SQL Ondemand connection
     $SQLOndemandEndpoint = "$($WorkspaceName)-ondemand.sql.azuresynapse.net"
     Write-Host "  ----------------------------------------------------------------------------"
-    Write-Host "  -Testing SQL Ondemand connection ($($SQLOndemandEndpoint)) / [MASTER] DB on Port 1433" -ForegroundColor DarkGray
+    Write-Host "  -Testing SQL Ondemand connection ($($SQLOndemandEndpoint)) / [$($ServerlessPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
 
     if ($null -ne $SQLOndemandEndpoint) 
     {
         TestSQLConnection `
             -ServerName $SQLOndemandEndpoint `
-            -DatabaseName "master" `
+            -DatabaseName $ServerlessPoolDBName `
             -SQLConnectionTimeout $SQLConnectionTimeout `
             -SQLQueryTimeout $SQLQueryTimeout `
             -SQL_token $SQL_token

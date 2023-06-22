@@ -1,4 +1,5 @@
-#UPDATES
+# RELEASE NOTES
+
     - 2021-11-04 - Name resolution now also looks to host files to check if HOST file entry match Public DNS entry
     - 2022-01-21 - Shows note when open dns / cx dns name resultion fail
                  - Fix for when name resultion fails "No such host is known". Sample workspaces conected to former SQL DW does not resolve SERVERNAME.sql.azuresynapse.net
@@ -28,7 +29,9 @@
     - 2023-05-29 - Documented and improved using GitHub Copilot chatbot
     - 2023-06-21 - Some small fixes
                  - Removed public DNS check. Many CX have blocked internet and requestes were failing and causing confusion
+    - 2023-06-22 - Added DB name parameters for dedicated and serverless for connection test
+                 - Moved script to official github repo - Version 1.0
 
-#KNOW ISSUES / TO DO
+# KNOW ISSUES / TO DO
     - Need to make / test on linux / Mac machines
     - Sign code

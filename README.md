@@ -6,8 +6,9 @@
     - Check name resolution for all possible endpoints used by Synapse
     - Check if ports needed are open (1433 / 1443 / 443)
     - Check Internet and Self Hosted IR proxy that change name resolution from local machine to proxy
-    - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
-    - Try to connect to SQL and SQLOndemand APIs using port 1433
+    - To make this test it might open AD auth / MFA / to be able to make tests below (Connect-AzAccount -Subscription $SubscriptionID)
+        - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
+        - Try to connect to SQL and SQLOndemand APIs using port 1433
 
 ## Requirements
     - IF want to run as script
@@ -19,7 +20,44 @@
         - Install-Module -Name SqlServer -Repository PSGallery -Force"
 
 ## Data Collection
-The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+The software may collect anonymous information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+
+## Execution
+
+### Option 1
+    - Open Powershell ISE
+    - Copy and paste script
+    - Change variables
+      - $WorkspaceName = 'fonsecanetsynapse' # Enter your Synapse Workspace name. Not FQDN just name
+      - $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+      - $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+      - $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+      - $DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+
+    - Execute the script
+
+### Option 2
+    - Copy ps1 script to a folder
+
+    - On Powershell copy below script 
+
+    ```Powershell
+$parameters = @{
+    WorkspaceName = 'WORKSPACENAME' # or any other supported FQDN
+    SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Set the name of the database you wish to test, 'master' will be used by default if nothing is set
+    DedicatedSQLPoolDBName = ''  # Set the login username you wish to use, 'AzSQLConnCheckerUser' will be used by default if nothing is set
+    ServerlessPoolDBName = ''  # Set the login password you wish to use, 'AzSQLConnCheckerPassword' will be used by default if nothing is set
+    DisableAnonymousTelemetry = $false  # Set as $true (default) or $false
+}
+
+$FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
+Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath -Raw))) -ArgumentList $parameters
+    ```
+
+    - Change variables
+
+    - Execute the script
+
 
 ## Contributing
 
