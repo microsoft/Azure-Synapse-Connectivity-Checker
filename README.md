@@ -31,71 +31,71 @@ The software may collect anonymous information about you and your use of the sof
 
 ### Option 1 - Execute last version directly from WEB (Require internet connection)
 
-    - Open Powershell ISE copy below script 
+ - Open Powershell ISE copy below script 
 
-      #------------------------------------------------------------------------------------------------------------------------------------------------------------
-      ProgressPreference = "SilentlyContinue";
-      $parameters = @{
-            WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
-            SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
-            DedicatedSQLPoolDBName = ''  
-            ServerlessPoolDBName = ''  
-            DisableAnonymousTelemetry = $false  
+ ```Powershell
+ProgressPreference = "SilentlyContinue";
+$parameters = @{
+	WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+	SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+	DedicatedSQLPoolDBName = ''  
+	ServerlessPoolDBName = ''  
+	DisableAnonymousTelemetry = $false  
+}
+$scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Synapse-TestConnection.ps1'
+cls
+Write-Host 'Trying to download the script file from GitHub (https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/), please wait...'
+try {
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+	Invoke-Command -ScriptBlock ([Scriptblock]::Create((Invoke-WebRequest ($scriptUrl) -UseBasicParsing -TimeoutSec 60).Content)) -ArgumentList $parameters
+}
+catch {
+	Write-Host 'ERROR: The script file could not be downloaded:' -ForegroundColor Red
+	$_.Exception
+	Write-Host 'Confirm this machine can access https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/' -ForegroundColor Yellow
+	Write-Host 'or use a machine with Internet access to see how to run this from machines without Internet.' -ForegroundColor Yellow
       }
-      $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Synapse-TestConnection.ps1'
-      cls
-      Write-Host 'Trying to download the script file from GitHub (https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/), please wait...'
-      try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
-            Invoke-Command -ScriptBlock ([Scriptblock]::Create((Invoke-WebRequest ($scriptUrl) -UseBasicParsing -TimeoutSec 60).Content)) -ArgumentList $parameters
-      }
-      catch {
-            Write-Host 'ERROR: The script file could not be downloaded:' -ForegroundColor Red
-            $_.Exception
-            Write-Host 'Confirm this machine can access https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/' -ForegroundColor Yellow
-            Write-Host 'or use a machine with Internet access to see how to run this from machines without Internet.' -ForegroundColor Yellow
-      }
-      #------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ```
 
-    - Change variables
-
-    - Execute the script
+ - Change variables
+ - Execute the script
 
 
 
 ### Option 2 - Download and Run
-    - Open Powershell ISE
-    - Copy / Past content of script (Synapse-TestConnection.ps1)
-    - Change variables
-      - $WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
-      - $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
-      - $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-      - $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-      - $DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
-
-    - Execute the script
+ - Open Powershell ISE
+ - Copy / Past content of script (Synapse-TestConnection.ps1)
+ - Change variables
+ ```Powershell
+- $WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+- $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+- $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+- $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+- $DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+ ```
+  - Execute the script
 
 ### Option 3 - Run locally but with parameters (Best when need to run multiple times / automation)
-    - Copy (Synapse-TestConnection.ps1) script file to a folder
 
-    - On Powershell copy below script 
+ - Copy (Synapse-TestConnection.ps1) script file to a folder
 
-        #------------------------------------------------------------------------------------------------------------------------------------------------------------
-        $parameters = @{
-            WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
-            SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
-            DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-            ServerlessPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-            DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
-        }
-        
-        $FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
-        Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath -Raw))) -ArgumentList $parameters
-        #------------------------------------------------------------------------------------------------------------------------------------------------------------
+ - On Powershell copy below script 
 
-    - Change variables
+ ```Powershell
+$parameters = @{
+	WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+	SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
+	DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+	ServerlessPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
+	DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+}
 
-    - Execute the script
+$FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
+Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath -Raw))) -ArgumentList $parameters
+ ```
+
+ - Change variables
+ - Execute the script
 
 
 ## Contributing
