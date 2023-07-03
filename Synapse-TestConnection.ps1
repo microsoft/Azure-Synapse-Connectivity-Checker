@@ -5,7 +5,7 @@
     Author: Sergio Fonseca
     Twitter @FonsecaSergio
     Email: sergio.fonseca@microsoft.com
-    Last Updated: 2023-06-22
+    Last Updated: 2023-06-23
 
     ## Copyright (c) Microsoft Corporation.
     #Licensed under the MIT license.
@@ -17,16 +17,7 @@
     #WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .SYNOPSIS   
-    TEST SYNAPSE ENDPOINTS AND PORTS NEEDED
-
-    - Check Windows HOST File entries
-    - Check DNS configuration
-    - Check name resolution for all possible endpoints used by Synapse and compare it with public DNS
-    - Check if ports needed are open (1433 / 1443 / 443)
-    - Check Internet and Self Hosted IR proxy that change name resolution from local machine to proxy
-    - To make this test it might open AD auth / MFA / to be able to make tests below (Connect-AzAccount -Subscription $SubscriptionID)
-        - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
-        - Try to connect to SQL and SQLOndemand APIs using port 1433
+    Check last version and documentation at https://github.com/microsoft/Azure-Synapse-Connectivity-Checker
     
     REQUIRES
         IF want to run as script
@@ -37,46 +28,21 @@
         -Import-Module SQLServer
             - Install-Module -Name SqlServer -Repository PSGallery -Force"
 
-
-
-.PARAMETER WorkspaceName
-    Enter your Synapse Workspace name. Not FQDN just name
-
-.PARAMETER SubscriptionID
-    Subscription ID where Synapse Workspace is located
-
-.PARAMETER DedicatedSQLPoolDBName
-    Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-
-.PARAMETER ServerlessPoolDBName
-    Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-
-.PARAMETER DisableAnonymousTelemetry
-If you enable this swith no anonymous information will be sent to Microsoft
-Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
-
-.DESCRIPTION
-ADDITIONAL INFO
- - You can also check
-   - https://docs.microsoft.com/en-us/azure/synapse-analytics/troubleshoot/troubleshoot-synapse-studio-powershell
-
- - For full SQL connectivity test use
-  - https://github.com/Azure/SQL-Connectivity-Checker/
-
-
 #> 
 
 using namespace System.Net
 
 
 # Parameter region for when script is run directly
-$WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
+$WorkspaceName = 'REPLACEWORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
 $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
 $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
 $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
 
 # Optional parameters (default values will be used if omitted)
 $DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
+#Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+
 
 # Parameter region when Invoke-Command is used
 $parameters = $args[0]
@@ -106,7 +72,7 @@ Clear-Host
 
 ####################################################################################################################################################
 #LOG VERSIONS
-New-Variable -Name VERSION -Value "1.0" -Option Constant -ErrorAction Ignore
+New-Variable -Name VERSION -Value "1.1" -Option Constant -ErrorAction Ignore
 New-Variable -Name AnonymousRunId -Value ([guid]::NewGuid()).Guid -Option Constant -ErrorAction Ignore
 
 Write-Host ("Current version: " + $VERSION)
@@ -127,59 +93,10 @@ if([string]::IsNullOrEmpty($ServerlessPoolDBName))
 
 Write-Host ("DedicatedSQLPoolDBName: " + $DedicatedSQLPoolDBName)
 Write-Host ("ServerlessPoolName: " + $ServerlessPoolDBName)
-
-
-
-####################################################################################################################################################
-#CHECK IF MACHINE IS WINDOWS
-<#
-.SYNOPSIS
-    Tests the connection on Windows machines.
-
-.DESCRIPTION
-    This function tests the connection on Windows machines by checking the operating system version. If the operating system is not Windows, it will throw an error and exit the function.
-
-.PARAMETER None
-
-.EXAMPLE
-    Test-ConnectionOnWindows
-#>
-function Test-ConnectionOnWindows {
-    [String]$OS = [System.Environment]::OSVersion.Platform
-    Write-Host "SO: $($OS)"
-
-    if (-not(($OS.Contains("Win"))))
-    {
-        Write-Error "Only can be used on Windows Machines"
-        Break
-    }
-}
-Test-ConnectionOnWindows
-
 ####################################################################################################################################################
 
-if (-not(Get-Module -Name DnsClient -ListAvailable)) {
-    try {
-        Import-Module DnsClient -ErrorAction Stop
-    }
-    catch {
-        Write-Host "   - ERROR::Import-Module DnsClient"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-    }
-}
 
 
-####################################################################################################################################################
-#region OTHER PARAMETERS / CONSTANTS
-
-New-Variable -Name TestPortConnectionTimeoutMs -Value 1000 -Option Constant -ErrorAction Ignore
-New-Variable -Name SQLConnectionTimeout -Value 15 -Option Constant -ErrorAction Ignore
-New-Variable -Name SQLQueryTimeout -Value 15 -Option Constant -ErrorAction Ignore
-New-Variable -Name HostsFile -Value "$env:SystemDrive\Windows\System32\Drivers\etc\hosts" -Option Constant -ErrorAction Ignore
-New-Variable -Name DebugConnectToEndpoints -Value $true -Option Constant -ErrorAction Ignore #Used for debug. Will not make real connection test to endpoints
-
-#endregion OTHER PARAMETERS / CONSTANTS
-$Summary = New-Object System.Text.StringBuilder
 
 ####################################################################################################################################################
 #Telemetry
@@ -238,7 +155,7 @@ function logEvent {
 $Message = "Version: " + $VERSION
 logEvent -Message $Message -AnonymousRunId $AnonymousRunId
 
-
+####################################################################################################################################################
 <#
 .SYNOPSIS
 Sends a ANONYMOUS TELEMETRY event to Azure Application Insights.
@@ -285,6 +202,58 @@ function logException
         #Write-Host "ERROR ($($_.Exception))"
     }        
 }
+
+####################################################################################################################################################
+#CHECK IF MACHINE IS WINDOWS
+<#
+.SYNOPSIS
+    Tests the connection on Windows machines.
+
+.DESCRIPTION
+    This function tests the connection on Windows machines by checking the operating system version. If the operating system is not Windows, it will throw an error and exit the function.
+
+.PARAMETER None
+
+.EXAMPLE
+    Test-ConnectionOnWindows
+#>
+function Test-ConnectionOnWindows {
+    [String]$OS = [System.Environment]::OSVersion.Platform
+    Write-Host "SO: $($OS)"
+
+    if (-not(($OS.Contains("Win"))))
+    {
+        Write-Error "Only can be used on Windows Machines"
+        Break
+    }
+}
+Test-ConnectionOnWindows
+
+####################################################################################################################################################
+
+if (-not(Get-Module -Name DnsClient -ListAvailable)) {
+    try {
+        Import-Module DnsClient -ErrorAction Stop
+    }
+    catch {
+        Write-Host "   - ERROR::Import-Module DnsClient"  -ForegroundColor Red
+        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+
+####################################################################################################################################################
+#region OTHER PARAMETERS / CONSTANTS
+
+New-Variable -Name TestPortConnectionTimeoutMs -Value 1000 -Option Constant -ErrorAction Ignore
+New-Variable -Name SQLConnectionTimeout -Value 15 -Option Constant -ErrorAction Ignore
+New-Variable -Name SQLQueryTimeout -Value 15 -Option Constant -ErrorAction Ignore
+New-Variable -Name HostsFile -Value "$env:SystemDrive\Windows\System32\Drivers\etc\hosts" -Option Constant -ErrorAction Ignore
+New-Variable -Name DebugConnectToEndpoints -Value $true -Option Constant -ErrorAction Ignore #Used for debug. Will not make real connection test to endpoints
+
+#endregion OTHER PARAMETERS / CONSTANTS
+$Summary = New-Object System.Text.StringBuilder
+
 
 
 
@@ -874,12 +843,8 @@ foreach ($EndpointTest in $EndpointTestList)
 
 if ($isAnyPortClosed) {
     [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-    [void]$Summary.Append(">>ALERT:: IF ANY PORT IS")
-    [void]$Summary.Append(" CLOSED ")
-    [void]$Summary.Append("NEED TO MAKE SURE YOUR")
-    [void]$Summary.Append(" CLIENT SIDE FIREWALL ")
-    [void]$Summary.Append("IS")
-    [void]$Summary.AppendLine(" OPEN")
+    [void]$Summary.AppendLine(">> - ERROR(ID06):: IF ANY PORT IS CLOSED NEED TO MAKE SURE YOUR CLIENT SIDE FIREWALL IS OPEN")
+    [void]$Summary.AppendLine("")
     [void]$Summary.AppendLine(">>CHECK")
     [void]$Summary.AppendLine(">> - https://learn.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-ip-firewall#connect-to-azure-synapse-from-your-own-network")
     [void]$Summary.AppendLine(">> - https://techcommunity.microsoft.com/t5/azure-synapse-analytics-blog/synapse-connectivity-series-part-1-inbound-sql-dw-connections-on/ba-p/3589170")
@@ -932,10 +897,10 @@ if ($DebugConnectToEndpoints)
     The SQL token to use for authentication. If not provided, a SQL user and password will be used.
 
     .PARAMETER SQL_user
-    The SQL user to use for authentication. Default is "TestUser".
+    The SQL user to use for authentication. Default is "SynapseConnectivityCheckerScript".
 
     .PARAMETER SQL_password
-    The SQL password to use for authentication. Default is "TestUser123".
+    The SQL password to use for authentication. Default is "SynapseConnectivityCheckerScript123".
 
     .PARAMETER SQLConnectionTimeout
     The timeout for the SQL connection in seconds. Default is 15.
@@ -954,13 +919,35 @@ if ($DebugConnectToEndpoints)
             [string]$ServerName,
             [string]$DatabaseName="master",
             [string]$SQL_token=$null,
-            [string]$SQL_user="TestUser",
-            [string]$SQL_password="TestUser123",
+            [string]$SQL_user="SynapseConnectivityCheckerScript",
+            [string]$SQL_password="SynapseConnectivityCheckerScript123",
             [int]$SQLConnectionTimeout = 15,
             [int]$SQLQueryTimeout = 15
         )
         
-        $Query = "select TOP 1 connection_id, GETUTCDATE() as DATE from sys.dm_exec_connections where session_id = @@SPID"
+        $Query = "
+        BEGIN TRY
+            EXEC('SELECT TOP 1 connection_id, GETUTCDATE() as DATE 
+            FROM sys.dm_exec_connections 
+            WHERE session_id = @@SPID')
+        END TRY
+        BEGIN CATCH
+            IF (ERROR_MESSAGE()= 'Catalog view ''dm_exec_connections'' is not supported in this version.')
+            BEGIN
+                BEGIN TRY
+                    EXEC('SELECT TOP 1 SESSION_ID() connection_id, GETUTCDATE() as DATE 
+                    FROM sys.dm_pdw_exec_connections 
+                    WHERE session_id = SESSION_ID()')
+                END TRY
+                BEGIN CATCH
+                    THROW
+                END CATCH
+            END
+            ELSE
+            BEGIN
+                THROW
+            END
+        END CATCH"
         
         Try
         {
@@ -1051,6 +1038,16 @@ if ($DebugConnectToEndpoints)
                     Write-Host "     - Error: ($(@($theError.Exception.Errors)[0].Number)) / State: ($(@($theError.Exception.Errors)[0].State)) / Message: ($($theError.Exception.Message))" -ForegroundColor Red
                     Write-Host "     - ClientConnectionId: $($theError.Exception.ClientConnectionId)" -ForegroundColor Red
 
+                    if ($theError.Exception.Message -like "*Login failed for user 'SynapseConnectivityCheckerScript'*")
+                    {
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine(">> - ALERT(ID07)::($($ServerName)) Login failed for user 'SynapseConnectivityCheckerScript'")
+                        [void]$Summary.AppendLine(">>   - Your AAD auth failed so we used fake user + pass to test connectivity. If we get this error at least we could reach Synapse Gateway")
+                        [void]$Summary.AppendLine(">>   - Test to connect SSMS - Download last version from https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms")
+                        [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                        [void]$Summary.AppendLine("")   
+                    }
+
                     if ($theError.Exception.Message -like "*Login failed for user '<token-identified principal>'*")
                     {
                         [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
@@ -1094,7 +1091,7 @@ if ($DebugConnectToEndpoints)
     }
 
 
-
+    $isAzModuleInstalled = $false
 
 
     #----------------------------------------------------------------------------------------------------------------------
@@ -1102,6 +1099,7 @@ if ($DebugConnectToEndpoints)
     try {
         # Attempt to import the Az.Accounts module with a minimum version of 2.2.0
         Import-Module Az.Accounts -MinimumVersion 2.2.0 -ErrorAction Stop
+        $isAzModuleInstalled = $true
     }
     catch {
         # If the import fails, display an error message with the exception message
@@ -1110,231 +1108,236 @@ if ($DebugConnectToEndpoints)
         Write-Host "   - INSTALL AZ MODULE AND TRY AGAIN OR ELSE CANNOT PROCESS LOGIN TO TEST APIs" -ForegroundColor Yellow
         Write-Host "     - https://learn.microsoft.com/en-us/powershell/azure/install-azps-windows" -ForegroundColor Yellow
         Write-Host "     - Install-Module -Name Az -Repository PSGallery -Force" -ForegroundColor Yellow
-
-        # Break out of the try-catch block
-        break
     }
 
-    #----------------------------------------------------------------------------------------------------------------------
-    # Try Connect AAD
-    try {
-        Write-Host " > Check your browser for authentication form ..." -ForegroundColor Yellow
+    if($isAzModuleInstalled)
+    {
+        #----------------------------------------------------------------------------------------------------------------------
+        # Try Connect AAD
+        try {
+            Write-Host " > Check your browser for authentication form ..." -ForegroundColor Yellow
 
-        # Attempt to connect to the Azure account using the specified subscription ID
-        $null = Connect-AzAccount -Subscription $SubscriptionID -ErrorAction Stop
-    }
-    catch {
-        # If the connection attempt fails, display an error message with the exception message
-        Write-Host "   - ERROR::Connect-AzAccount"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-    }
-
-    #----------------------------------------------------------------------------------------------------------------------
-    # Get Management token - Control Plane operations
-    try {
-        $Management_token = (Get-AzAccessToken -Resource "https://management.azure.com" -ErrorAction Stop).Token
-        $Management_headers = @{ Authorization = "Bearer $Management_token" }   
-    }
-    catch {
-        # If the access token retrieval fails, display an error message with the exception message
-        Write-Host "   - ERROR::Get-AzAccessToken (Management)"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-    }
-    #----------------------------------------------------------------------------------------------------------------------
-    # Get Dev Token - Data Plane Operations
-    try {
-        $Dev_token = (Get-AzAccessToken -Resource "https://dev.azuresynapse.net" -ErrorAction Stop).Token
-        $Dev_headers = @{ Authorization = "Bearer $Dev_token" }    
-    }
-    catch {
-        Write-Host "   - ERROR::Get-AzAccessToken (dev synapse)"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-    }
-
-    #----------------------------------------------------------------------------------------------------------------------
-    # Get SQL Token - Test SQL Connectivity
-    try {
-        $SQL_token = (Get-AzAccessToken -Resource "https://database.windows.net" -ErrorAction Stop).Token
-    }
-    catch {
-        Write-Host "   - ERROR::Get-AzAccessToken (database)"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-    }
-
-
-    #----------------------------------------------------------------------------------------------------------------------
-    Write-Host "  ----------------------------------------------------------------------------"
-    Write-Host "  -Testing API call to management endpoint (management.azure.com) on Port 443" -ForegroundColor DarkGray
-
-    $WorkspaceObject = $null
-    $SQLEndpoint = $null
-    $SQLOndemandEndpoint = $null
-    $DevEndpoint = $null
-    [bool]$isSynapseWorkspace = $false
-
-    try {
-        # Construct the URI for the Synapse Workspace API call
-        $uri = "https://management.azure.com/subscriptions/$($SubscriptionID)"
-        $uri += "/providers/Microsoft.Synapse/workspaces?api-version=2021-06-01"
-
-        # Make the API call to retrieve the Synapse Workspace object
-        $result = Invoke-RestMethod -Method Get -ContentType "application/json" -Uri $uri -Headers $Management_headers
-
-        # Loop through each workspace object returned by the API call
-        foreach ($WorkspaceObject in $result.value)
-        {
-            # Check if the current workspace object matches the specified workspace name
-            if ($WorkspaceObject.name -eq $WorkspaceName)
-            {
-                $SQLOndemandEndpoint = $WorkspaceObject.properties.connectivityEndpoints.sqlOnDemand
-                $DevEndpoint = $WorkspaceObject.properties.connectivityEndpoints.dev    
-
-                # If the workspace is a Synapse workspace, set the appropriate endpoints
-                if ($WorkspaceObject.properties.extraProperties.WorkspaceType -eq "Normal") {
-                    $SQLEndpoint = $WorkspaceObject.properties.connectivityEndpoints.sql
-                    $isSynapseWorkspace = $true
-                }
-
-                # If the workspace is a former SQL DW, set the appropriate endpoint
-                if ($WorkspaceObject.properties.extraProperties.WorkspaceType -eq "Connected") {
-                    $SQLEndpoint = "$WorkspaceName.database.windows.net"
-                }
-                
-                break
-            }
+            # Attempt to connect to the Azure account using the specified subscription ID
+            $null = Connect-AzAccount -Subscription $SubscriptionID -ErrorAction Stop
+        }
+        catch {
+            # If the connection attempt fails, display an error message with the exception message
+            Write-Host "   - ERROR::Connect-AzAccount"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
         }
 
-        # If a DevEndpoint was found, output the endpoints
-        if ($null -ne $DevEndpoint) 
-        {
-            Write-Host "     - SQLEndpoint: ($($SQLEndpoint))"
-            Write-Host "     - SQLOndemandEndpoint: ($($SQLOndemandEndpoint))"
-            Write-Host "     - DevEndpoint: ($($DevEndpoint))"
+        #----------------------------------------------------------------------------------------------------------------------
+        # Get Management token - Control Plane operations
+        try {
+            $Management_token = (Get-AzAccessToken -Resource "https://management.azure.com" -ErrorAction Stop).Token
+            $Management_headers = @{ Authorization = "Bearer $Management_token" }   
         }
-        else #former SQL DW
-        {
-            
+        catch {
+            # If the access token retrieval fails, display an error message with the exception message
+            Write-Host "   - ERROR::Get-AzAccessToken (Management)"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+        }
+        #----------------------------------------------------------------------------------------------------------------------
+        # Get Dev Token - Data Plane Operations
+        try {
+            $Dev_token = (Get-AzAccessToken -Resource "https://dev.azuresynapse.net" -ErrorAction Stop).Token
+            $Dev_headers = @{ Authorization = "Bearer $Dev_token" }    
+        }
+        catch {
+            Write-Host "   - ERROR::Get-AzAccessToken (dev synapse)"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+        }
+
+        #----------------------------------------------------------------------------------------------------------------------
+        # Get SQL Token - Test SQL Connectivity
+        try {
+            $SQL_token = (Get-AzAccessToken -Resource "https://database.windows.net" -ErrorAction Stop).Token
+        }
+        catch {
+            Write-Host "   - ERROR::Get-AzAccessToken (database)"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+        }
+
+
+        #----------------------------------------------------------------------------------------------------------------------
+        Write-Host "  ----------------------------------------------------------------------------"
+        Write-Host "  -Testing API call to management endpoint (management.azure.com) on Port 443" -ForegroundColor DarkGray
+
+        $WorkspaceObject = $null
+        $SQLEndpoint = $null
+        $SQLOndemandEndpoint = $null
+        $DevEndpoint = $null
+        [bool]$isSynapseWorkspace = $false
+
+        try {
+            # Construct the URI for the Synapse Workspace API call
             $uri = "https://management.azure.com/subscriptions/$($SubscriptionID)"
-            $uri += "/providers/Microsoft.SQL/servers?api-version=2022-05-01-preview"
+            $uri += "/providers/Microsoft.Synapse/workspaces?api-version=2021-06-01"
 
+            # Make the API call to retrieve the Synapse Workspace object
             $result = Invoke-RestMethod -Method Get -ContentType "application/json" -Uri $uri -Headers $Management_headers
 
-            foreach ($SQLObject in $result.value)
+            # Loop through each workspace object returned by the API call
+            foreach ($WorkspaceObject in $result.value)
             {
-                # Check if the current SQL object matches the specified workspace name
-                if ($SQLObject.name -eq $WorkspaceName)
+                # Check if the current workspace object matches the specified workspace name
+                if ($WorkspaceObject.name -eq $WorkspaceName)
                 {
-                    # Set the SQL endpoint
-                    $SQLEndpoint = "$WorkspaceName.database.windows.net"
-                    Write-Host "      - SQLEndpoint: ($($SQLEndpoint))"
+                    $SQLOndemandEndpoint = $WorkspaceObject.properties.connectivityEndpoints.sqlOnDemand
+                    $DevEndpoint = $WorkspaceObject.properties.connectivityEndpoints.dev    
+
+                    # If the workspace is a Synapse workspace, set the appropriate endpoints
+                    if ($WorkspaceObject.properties.extraProperties.WorkspaceType -eq "Normal") {
+                        $SQLEndpoint = $WorkspaceObject.properties.connectivityEndpoints.sql
+                        $isSynapseWorkspace = $true
+                    }
+
+                    # If the workspace is a former SQL DW, set the appropriate endpoint
+                    if ($WorkspaceObject.properties.extraProperties.WorkspaceType -eq "Connected") {
+                        $SQLEndpoint = "$WorkspaceName.database.windows.net"
+                    }
+                    
                     break
                 }
             }
-        }
-        Write-Host "   - SUCESS:: Connection Management ENDPOINT"  -ForegroundColor Green        
-    }
-    catch {
-        # Handle any errors that occur during the API calls
-        Write-Host "   - ERROR:: TEST Management ENDPOINT" -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
 
-        if ($_.Exception.Response.StatusCode -eq "Forbidden") 
+            # If a DevEndpoint was found, output the endpoints
+            if ($null -ne $DevEndpoint) 
+            {
+                Write-Host "     - SQLEndpoint: ($($SQLEndpoint))"
+                Write-Host "     - SQLOndemandEndpoint: ($($SQLOndemandEndpoint))"
+                Write-Host "     - DevEndpoint: ($($DevEndpoint))"
+            }
+            else #former SQL DW
+            {
+                
+                $uri = "https://management.azure.com/subscriptions/$($SubscriptionID)"
+                $uri += "/providers/Microsoft.SQL/servers?api-version=2022-05-01-preview"
+
+                $result = Invoke-RestMethod -Method Get -ContentType "application/json" -Uri $uri -Headers $Management_headers
+
+                foreach ($SQLObject in $result.value)
+                {
+                    # Check if the current SQL object matches the specified workspace name
+                    if ($SQLObject.name -eq $WorkspaceName)
+                    {
+                        # Set the SQL endpoint
+                        $SQLEndpoint = "$WorkspaceName.database.windows.net"
+                        Write-Host "      - SQLEndpoint: ($($SQLEndpoint))"
+                        break
+                    }
+                }
+            }
+            Write-Host "   - SUCESS:: Connection Management ENDPOINT"  -ForegroundColor Green        
+        }
+        catch {
+            # Handle any errors that occur during the API calls
+            Write-Host "   - ERROR:: TEST Management ENDPOINT" -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+
+            if ($_.Exception.Response.StatusCode -eq "Forbidden") 
+            {
+                [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                [void]$Summary.AppendLine(">> - ERROR(ID04):: Calling management endpoint (management.azure.com) on Port 443 failed")
+                [void]$Summary.AppendLine(">>   - You do not have permission to reach management.azure.com API")
+                [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                [void]$Summary.AppendLine("")
+            }
+
+        }
+
+
+        #----------------------------------------------------------------------------------------------------------------------
+        #Testing SQL DEV API
+        $DevEndpoint = "$($WorkspaceName).dev.azuresynapse.net"
+        Write-Host "  ----------------------------------------------------------------------------"
+        Write-Host "  -Testing SQL DEV API ($($DevEndpoint)) on Port 443" -ForegroundColor DarkGray
+
+        try 
         {
-            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine(">> - ERROR(ID04):: Calling management endpoint (management.azure.com) on Port 443 failed")
-            [void]$Summary.AppendLine(">>   - You do not have permission to reach management.azure.com API")
-            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine("")
+            #https://learn.microsoft.com/en-us/rest/api/synapse/data-plane/workspace/get?tabs=HTTP
+            #GET {endpoint}/workspace?api-version=2020-12-01         
+            
+            $uri = "https://$($DevEndpoint)/workspace?api-version=2020-12-01"
+
+            Write-Host "   > API CALL ($($uri))"
+
+            $result = Invoke-RestMethod -Method Get -ContentType "application/json" -Uri $uri -Headers $Dev_headers
+            Write-Host "   - SUCESS:: Connection DEV ENDPOINT"  -ForegroundColor Green
+        }
+        catch {
+            Write-Host "   - ERROR:: TEST DEV ENDPOINT"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+
+            if ($_.Exception.Response.StatusCode -eq "Forbidden") {           
+                [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                [void]$Summary.AppendLine(">> - ERROR(ID05):: Calling Synapse DEV API ($($DevEndpoint)) on Port 443 failed")
+                [void]$Summary.AppendLine(">>   - You do not have permission to reach Synapse DEV API ($($DevEndpoint))")
+                [void]$Summary.AppendLine(">>   - CHECK")
+                [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-access-control-overview")
+                [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac")
+                [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac-roles")
+                [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-understand-what-role-you-need")
+                [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+                [void]$Summary.AppendLine("")
+            }
         }
 
-    }
 
+        $isSQLServerModuleInstalled = $false
 
-    #----------------------------------------------------------------------------------------------------------------------
-    #Testing SQL DEV API
-    $DevEndpoint = "$($WorkspaceName).dev.azuresynapse.net"
-    Write-Host "  ----------------------------------------------------------------------------"
-    Write-Host "  -Testing SQL DEV API ($($DevEndpoint)) on Port 443" -ForegroundColor DarkGray
-
-    try 
-    {
-        #https://learn.microsoft.com/en-us/rest/api/synapse/data-plane/workspace/get?tabs=HTTP
-        #GET {endpoint}/workspace?api-version=2020-12-01         
-        
-        $uri = "https://$($DevEndpoint)/workspace?api-version=2020-12-01"
-
-        Write-Host "   > API CALL ($($uri))"
-
-        $result = Invoke-RestMethod -Method Get -ContentType "application/json" -Uri $uri -Headers $Dev_headers
-        Write-Host "   - SUCESS:: Connection DEV ENDPOINT"  -ForegroundColor Green
-    }
-    catch {
-        Write-Host "   - ERROR:: TEST DEV ENDPOINT"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-
-        if ($_.Exception.Response.StatusCode -eq "Forbidden") {           
-            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine(">> - ERROR(ID05):: Calling Synapse DEV API ($($DevEndpoint)) on Port 443 failed")
-            [void]$Summary.AppendLine(">>   - You do not have permission to reach Synapse DEV API ($($DevEndpoint))")
-            [void]$Summary.AppendLine(">>   - CHECK")
-            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-access-control-overview")
-            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac")
-            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-synapse-rbac-roles")
-            [void]$Summary.AppendLine(">>     - https://docs.microsoft.com/en-us/azure/synapse-analytics/security/synapse-workspace-understand-what-role-you-need")
-            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
-            [void]$Summary.AppendLine("")
+        #----------------------------------------------------------------------------------------------------------------------
+        # Import SQLServer module
+        try {
+            Import-Module SQLServer -ErrorAction Stop
+            $isSQLServerModuleInstalled = $true
         }
-    }
+        catch {
+            Write-Host "   - ERROR::Import-Module SqlServer"  -ForegroundColor Red
+            Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "   - INSTALL SQL Server MODULE AND TRY AGAIN OR ELSE CANNOT PROCESS TEST SQL LOGIN" -ForegroundColor Yellow
+            Write-Host "     - https://learn.microsoft.com/en-us/sql/powershell/sql-server-powershell" -ForegroundColor Yellow
+            Write-Host "     - Install-Module -Name SqlServer -Repository PSGallery -Force" -ForegroundColor Yellow
+        }
 
+        if($isSQLServerModuleInstalled)
+        {
+            #----------------------------------------------------------------------------------------------------------------------
+            #Testing SQL connection
+            Write-Host "  ----------------------------------------------------------------------------"
+            if ($null -eq $SQLEndpoint)
+            {
+                $SQLEndpoint = "$($WorkspaceName).sql.azuresynapse.net"
+            }
 
-    #----------------------------------------------------------------------------------------------------------------------
-    # Import SQLServer module
-    try {
-        Import-Module SQLServer -ErrorAction Stop
-    }
-    catch {
-        Write-Host "   - ERROR::Import-Module SqlServer"  -ForegroundColor Red
-        Write-Host "     - $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "   - INSTALL SQL Server MODULE AND TRY AGAIN OR ELSE CANNOT PROCESS TEST SQL LOGIN" -ForegroundColor Yellow
-        Write-Host "     - https://learn.microsoft.com/en-us/sql/powershell/sql-server-powershell" -ForegroundColor Yellow
-        Write-Host "     - Install-Module -Name SqlServer -Repository PSGallery -Force" -ForegroundColor Yellow
-        break
-    }
+            Write-Host "  -Testing SQL connection ($($SQLEndpoint)) / [$($DedicatedSQLPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
 
-    #----------------------------------------------------------------------------------------------------------------------
-    #Testing SQL connection
-    Write-Host "  ----------------------------------------------------------------------------"
-    if ($null -eq $SQLEndpoint)
-    {
-        $SQLEndpoint = "$($WorkspaceName).sql.azuresynapse.net"
-    }
+            if ($null -ne $SQLEndpoint)
+            {
+                TestSQLConnection `
+                    -ServerName $SQLEndpoint `
+                    -DatabaseName $DedicatedSQLPoolDBName `
+                    -SQLConnectionTimeout $SQLConnectionTimeout `
+                    -SQLQueryTimeout $SQLQueryTimeout `
+                    -SQL_token $SQL_token
+            }
 
-    Write-Host "  -Testing SQL connection ($($SQLEndpoint)) / [$($DedicatedSQLPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
+            #----------------------------------------------------------------------------------------------------------------------
+            #Testing SQL Ondemand connection
+            $SQLOndemandEndpoint = "$($WorkspaceName)-ondemand.sql.azuresynapse.net"
+            Write-Host "  ----------------------------------------------------------------------------"
+            Write-Host "  -Testing SQL Ondemand connection ($($SQLOndemandEndpoint)) / [$($ServerlessPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
 
-    if ($null -ne $SQLEndpoint)
-    {
-        TestSQLConnection `
-            -ServerName $SQLEndpoint `
-            -DatabaseName $DedicatedSQLPoolDBName `
-            -SQLConnectionTimeout $SQLConnectionTimeout `
-            -SQLQueryTimeout $SQLQueryTimeout `
-            -SQL_token $SQL_token
-    }
-
-    #----------------------------------------------------------------------------------------------------------------------
-    #Testing SQL Ondemand connection
-    $SQLOndemandEndpoint = "$($WorkspaceName)-ondemand.sql.azuresynapse.net"
-    Write-Host "  ----------------------------------------------------------------------------"
-    Write-Host "  -Testing SQL Ondemand connection ($($SQLOndemandEndpoint)) / [$($ServerlessPoolDBName)] DB on Port 1433" -ForegroundColor DarkGray
-
-    if ($null -ne $SQLOndemandEndpoint) 
-    {
-        TestSQLConnection `
-            -ServerName $SQLOndemandEndpoint `
-            -DatabaseName $ServerlessPoolDBName `
-            -SQLConnectionTimeout $SQLConnectionTimeout `
-            -SQLQueryTimeout $SQLQueryTimeout `
-            -SQL_token $SQL_token
+            if ($null -ne $SQLOndemandEndpoint) 
+            {
+                TestSQLConnection `
+                    -ServerName $SQLOndemandEndpoint `
+                    -DatabaseName $ServerlessPoolDBName `
+                    -SQLConnectionTimeout $SQLConnectionTimeout `
+                    -SQLQueryTimeout $SQLQueryTimeout `
+                    -SQL_token $SQL_token
+            }
+        }
     }
 
     #endregion TEST API CALLs
