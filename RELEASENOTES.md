@@ -30,8 +30,13 @@
     - 2023-06-21 - Some small fixes
                  - Removed public DNS check. Many CX have blocked internet and requestes were failing and causing confusion
     - 2023-06-22 - Added DB name parameters for dedicated and serverless for connection test
-                 - Moved script to official github repo - Version 1.0
-
+                 - Moved script to official github repo 
+                 # Version 1.0 RELEASED #
+    - 2023-06-23 - Added aditional error actions
+    - 2023-06-28 - Removed additional comments to simplify script execution
+    - 2023-07-03 - Fix code to run on Dedicated pool (sys.dm_exec_connections vs sys.dm_pdw_exec_connections )
+                 # Version 1.1 RELEASED #
+    
 # KNOW ISSUES / TO DO
     - Need to make / test on linux / Mac machines
     - Sign code
