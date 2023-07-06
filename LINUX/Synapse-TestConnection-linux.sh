@@ -51,11 +51,72 @@ else
     SO="OTHER"
 fi
 
+#!/bin/bash
+
+# Get the Linux distribution name
+get_distribution_name() {
+    if [ -f "/etc/os-release" ]; then
+        # Try to retrieve the distribution name from /etc/os-release
+        distribution_name=$(grep -oP '(?<=^NAME=").*?(?=")' /etc/os-release)
+        echo "$distribution_name"
+        return
+    fi
+
+    if [ -f "/etc/lsb-release" ]; then
+        # Try to retrieve the distribution name from /etc/lsb-release
+        distribution_name=$(grep -oP '(?<=^DISTRIB_ID=).*' /etc/lsb-release | tr -d '="')
+        echo "$distribution_name"
+        return
+    fi
+
+    if [ -f "/etc/redhat-release" ]; then
+        # If /etc/redhat-release exists, it is likely a Red Hat-based distribution
+        echo "Red Hat-based"
+        return
+    fi
+
+    # If no specific distribution information is found, output "Unknown"
+    echo "Unknown"
+}
+
+# Get the Linux version
+get_linux_version() {
+    if [ -f "/etc/os-release" ]; then
+        # Try to retrieve the version from /etc/os-release
+        OSversion=$(grep -oP '(?<=^VERSION_ID=").*?(?=")' /etc/os-release)
+        echo "$OSversion"
+        return
+    fi
+
+    if [ -f "/etc/lsb-release" ]; then
+        # Try to retrieve the version from /etc/lsb-release
+        OSversion=$(grep -oP '(?<=^DISTRIB_RELEASE=).*' /etc/lsb-release | tr -d '="')
+        echo "$OSversion"
+        return
+    fi
+
+    if [ -f "/etc/redhat-release" ]; then
+        # If /etc/redhat-release exists, extract the version from the file
+        OSversion=$(sed -E 's/[^0-9.]//g' /etc/redhat-release)
+        echo "$OSversion"
+        return
+    fi
+
+    # If no specific version information is found, output "Unknown"
+    echo "Unknown"
+}
+
+# Main script
+distribution=$(get_distribution_name)
+OSversion=$(get_linux_version)
+
 
 echo -e "${Cyan}------------------------------------------------------------------------------------"
 echo -e "Azure Synapse Connectivity Checker"
 echo -e " - Version: $version"
 echo -e " - SO: $SO"
+echo -e "   - Distribution: $distribution"
+echo -e "   - Version: $OSversion"
 echo -e " - Workspacename: $workspacename"
 echo -e "------------------------------------------------------------------------------------"
 echo -e "Bash Version"
@@ -86,11 +147,6 @@ do
 done
 
 ############################################################################################
-
-#!/bin/bash
-
-#!/bin/bash
-
 logEvent() {
     Message=$1
     AnonymousRunId=$(uuidgen)
@@ -112,6 +168,7 @@ logEvent() {
             -H "Content-Type: application/json" \
             -d "$body" \
             "https://dc.services.visualstudio.com/v2/track" > /dev/null; then
+            echo "Anonymous telemetry sent"
         else
             echo "Failed to send telemetry: $?"
         fi
@@ -121,7 +178,7 @@ logEvent() {
 }
 
 # Example usage:
-message="Version: $version - Linux"
+message="Version: $version - Linux - $distribution"
 logEvent "$message"
 
 print_hostfileentries() {
@@ -173,6 +230,7 @@ function print_CxDNSServer {
 
 function print_proxysettings 
 {
+    #need to TEST
     env | grep -i proxy
 }
 
@@ -190,6 +248,7 @@ print_CxDNSServer
 
 echo "------------------------------------------------------------------------------------"
 echo -e "${Yellow}Proxy Settings (IF ANY):${Color_Off}"
+echo -e " - NOT TESTED IN REAL LIFE"
 echo "------------------------------------------------------------------------------------"
 print_proxysettings
 
