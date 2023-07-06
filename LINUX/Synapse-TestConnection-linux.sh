@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#    Author: Sergio Fonseca
-#    Twitter @FonsecaSergio
-#    Email: sergio.fonseca@microsoft.com
-#    Last Updated: 2023-07-06
+# Azure Synapse Test Connection - Linux Version
+# Tested on 
+#  - Linux (Azure VM - ubuntu 23.04) - 2023-07-06
+
+# Author: Sergio Fonseca
+# Twitter @FonsecaSergio
+# Email: sergio.fonseca@microsoft.com
+# Last Updated: 2023-07-06
 
 ## Copyright (c) Microsoft Corporation.
-#Licensed under the MIT license.
-
-#Azure Synapse Test Connection - Linux Version
-#Tested on 
-#  - Linux (Azure VM - ubuntu 23.04) - 2023-07-06
+# Licensed under the MIT license.
 
 #THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
@@ -19,7 +19,11 @@
 
 # Define the workspace name
 workspacename="REPLACEWORKSPACENAME"
+
+# Set as $true if you don't want to send anonymous usage data to Microsoft
 DisableAnonymousTelemetry=false
+#Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+
 ############################################################################################
 version="1.0"
 hostsfilepath="/etc/hosts"
@@ -48,15 +52,15 @@ else
 fi
 
 
-echo -e "${Cyan}------------------------------------------------------------------------------------${Color_Off}"
-echo -e "${Cyan}Azure Synapse Connectivity Checker${Color_Off}"
-echo -e "${Cyan} - Version: $version${Color_Off}"
-echo -e "${Cyan} - SO: $SO${Color_Off}"
-echo -e "${Cyan} - Workspacename: $workspacename${Color_Off}"
-echo -e "${Cyan}------------------------------------------------------------------------------------${Color_Off}"
-echo -e "${Cyan}Bash Version${Color_Off}"
+echo -e "${Cyan}------------------------------------------------------------------------------------"
+echo -e "Azure Synapse Connectivity Checker"
+echo -e " - Version: $version"
+echo -e " - SO: $SO"
+echo -e " - Workspacename: $workspacename"
+echo -e "------------------------------------------------------------------------------------"
+echo -e "Bash Version"
 $(echo -e "bash --version")
-echo -e "${Cyan}------------------------------------------------------------------------------------${Color_Off}"
+echo -e "------------------------------------------------------------------------------------${Color_Off}"
 
 ############################################################################################
 # Define the endpoints
@@ -75,7 +79,7 @@ declare -A Endpoints=(
     ["graph.microsoft.com"]="443"
 )
 
-for Endpoint in "${!Endpoints[@]}"
+for Endpoint in $(echo "${!Endpoints[@]}" | tr ' ' '\n')
 do
     Ports=(${Endpoints[$Endpoint]})
     EndpointTestList+=("$Endpoint ${Ports[*]}")
@@ -83,23 +87,42 @@ done
 
 ############################################################################################
 
-function logEvent() {
-    local Message=$1
-    local AnonymousRunId=$(uuidgen)
+#!/bin/bash
 
-    if [ "$DisableAnonymousTelemetry" != true ]; then
+#!/bin/bash
+
+logEvent() {
+    Message=$1
+    AnonymousRunId=$(uuidgen)
+
+    if [[ $DisableAnonymousTelemetry != true ]]; then
         InstrumentationKey="d94ff6ec-feda-4cc9-8d0c-0a5e6049b581"
-        body=$(jq -n --arg name "Microsoft.ApplicationInsights.Event" --arg time "$(date -u +"%Y-%m-%dT%H:%M:%S.%NZ")" --arg iKey "$InstrumentationKey" --arg ai_user_id "$AnonymousRunId" --arg ver "2" --arg name "$Message" '{name: $name, time: $time, iKey: $iKey, tags: {"ai.user.id": $ai_user_id}, data: {baseType: "EventData", baseData: {ver: $ver, name: $name}}}')
-        response=$(curl -sS -X POST -H "Content-Type: application/json" -d "$body" "https://dc.services.visualstudio.com/v2/track" 2>&1)
-        if [ $? -ne 0 ]; then
-            echo "Error: $response" >&2
+        body=$(jq -n \
+            --arg name "$Message" \
+            --arg time "$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
+            --arg iKey "$InstrumentationKey" \
+            --arg tags '{"ai.user.id": "'"$AnonymousRunId"'"}' \
+            --arg baseType "EventData" \
+            --arg ver 2 \
+            --arg name "$Message" \
+            '{name: $name, time: $time, iKey: $iKey, tags: ($tags | fromjson), data: {baseType: $baseType, baseData: {ver: $ver, name: $name}}}')
+
+        # Wrap the curl command in a try-catch block
+        if curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "$body" \
+            "https://dc.services.visualstudio.com/v2/track" > /dev/null; then
+        else
+            echo "Failed to send telemetry: $?"
         fi
     else
         echo "Anonymous Telemetry is disabled" >&2
     fi
 }
 
-logEvent "Version: $version - Linux"
+# Example usage:
+message="Version: $version - Linux"
+logEvent "$message"
 
 print_hostfileentries() {
     local hosts_file="$1"
