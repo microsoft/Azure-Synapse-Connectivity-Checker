@@ -36,7 +36,8 @@
     - 2023-06-28 - Removed additional comments to simplify script execution
     - 2023-07-03 - Fix code to run on Dedicated pool (sys.dm_exec_connections vs sys.dm_pdw_exec_connections )
                  # Version 1.1 RELEASED #
-    
+    - 2023-07-06 - Released initial version for Linux
+
 # KNOW ISSUES / TO DO
-    - Need to make / test on linux / Mac machines
+    - Need to make / additional tests on linux / Mac machines
     - Sign code

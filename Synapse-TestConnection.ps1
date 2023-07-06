@@ -5,7 +5,7 @@
     Author: Sergio Fonseca
     Twitter @FonsecaSergio
     Email: sergio.fonseca@microsoft.com
-    Last Updated: 2023-06-23
+    Last Updated: 2023-07-06
 
     ## Copyright (c) Microsoft Corporation.
     #Licensed under the MIT license.
@@ -72,7 +72,7 @@ Clear-Host
 
 ####################################################################################################################################################
 #LOG VERSIONS
-New-Variable -Name VERSION -Value "1.1" -Option Constant -ErrorAction Ignore
+New-Variable -Name VERSION -Value "1.2" -Option Constant -ErrorAction Ignore
 New-Variable -Name AnonymousRunId -Value ([guid]::NewGuid()).Guid -Option Constant -ErrorAction Ignore
 
 Write-Host ("Current version: " + $VERSION)
@@ -152,7 +152,7 @@ function logEvent {
     }
 }
 
-$Message = "Version: " + $VERSION
+$Message = "Version: " + $VERSION + " - Windows"
 logEvent -Message $Message -AnonymousRunId $AnonymousRunId
 
 ####################################################################################################################################################
@@ -737,12 +737,26 @@ function Get-BrowserProxySettings
         {
             Write-Host "   - WARN:: PROXY ENABLED ON SERVER $($IESettings.ProxyServer)" -ForegroundColor Red
             Write-Host "   - WARN:: PROXY EXCEPTIONS $($IESettings.ProxyOverride)" -ForegroundColor Red
+
+            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+            [void]$Summary.AppendLine(">> - ALERT(ID08)::PROXY ENABLED ON SERVER $($IESettings.ProxyServer)'")
+            [void]$Summary.AppendLine(">>   - When Client have proxy does not matter name resolution and port. Connection is done IN the PROXY SERVER")
+            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+            [void]$Summary.AppendLine("")   
+
         }    
 
         # If there is an auto-config URL, display a warning message with the URL
         if ($null -ne $IESettings.AutoConfigURL)
         {
             Write-Host "   - WARN:: PROXY SCRIPT $($IESettings.AutoConfigURL)" -ForegroundColor Red
+
+            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+            [void]$Summary.AppendLine(">> - ALERT(ID09)::PROXY SCRIPT $($IESettings.AutoConfigURL)'")
+            [void]$Summary.AppendLine(">>   - When Client have proxy does not matter name resolution and port. Connection is done IN the PROXY SERVER")
+            [void]$Summary.AppendLine(">>----------------------------------------------------------------------------")
+            [void]$Summary.AppendLine("")   
+
         }    
 
     }
