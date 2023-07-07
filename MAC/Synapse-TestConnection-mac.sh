@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Azure Synapse Test Connection - Linux Version
+# Azure Synapse Test Connection - MacOS Version
 # Tested on 
 #  - MACOS Ventura 13.4.1
 
