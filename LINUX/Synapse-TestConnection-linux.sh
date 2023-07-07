@@ -3,11 +3,12 @@
 # Azure Synapse Test Connection - Linux Version
 # Tested on 
 #  - Linux (Azure VM - ubuntu 23.04) - 2023-07-06
+#  - Linux (Azure VM - Red Hat Enterprise Linux 8.7) - 2023-07-07
 
 # Author: Sergio Fonseca
 # Twitter @FonsecaSergio
 # Email: sergio.fonseca@microsoft.com
-# Last Updated: 2023-07-06
+# Last Updated: 2023-07-07
 
 ## Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
@@ -21,11 +22,11 @@
 workspacename="REPLACEWORKSPACENAME"
 
 # Set as $true if you don't want to send anonymous usage data to Microsoft
-DisableAnonymousTelemetry=false
+DisableAnonymousTelemetry=true
 #Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 
 ############################################################################################
-version="1.0"
+version="1.2"
 hostsfilepath="/etc/hosts"
 
 
@@ -50,8 +51,6 @@ elif [ "$(uname)" == "Linux" ]; then
 else
     SO="OTHER"
 fi
-
-#!/bin/bash
 
 # Get the Linux distribution name
 get_distribution_name() {
@@ -207,10 +206,10 @@ print_port_status() {
     local timeout=2
 
     # Create a new TCP client object
-    tcpClient=$(nc -v -w "$timeout" "$endpoint" "$port" 2>&1)
+    tcpClient=$(nc -v -z -w "$timeout" "$endpoint" "$port" 2>&1)
 
     # Check if the port is open
-    if [[ "$tcpClient" == *succeeded* ]]; then
+    if [[ "$tcpClient" == *succeeded* ]] || [[ "$tcpClient" == *Connected* ]]; then
         echo -e "${Green} > Port $port on $endpoint is open${Color_Off}"
     else
         echo -e "${Red} > Port $port on $endpoint is closed${Color_Off}"
@@ -221,10 +220,6 @@ function print_CxDNSServer {
     # Get the DNS client server addresses from resolv.conf file
     DNSServers=$(grep -E '^nameserver' /etc/resolv.conf | awk '{print $2}')
 
-    # Filter out loopback and Bluetooth interfaces, and empty server addresses
-    DNSServers=$(echo "$DNSServers")
-
-    # Return the DNS server addresses
     echo "DNSServers: $DNSServers"
 }
 
