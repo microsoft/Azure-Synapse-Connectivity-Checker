@@ -11,6 +11,11 @@ echo "Checking curl"
 dpkg -s curl | grep -i status
 echo "Checking sed"
 dpkg -s sed | grep -i status
-echo "Checking netcat - To run NC - Looks like not needed"
+echo "Checking netcat - To run NC"
 dpkg -s netcat | grep -i status
+
+#to run
+chmod +x Synapse-TestConnection-linux.sh
+
+./Synapse-TestConnection-linux.sh
 
