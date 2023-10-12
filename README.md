@@ -28,6 +28,8 @@ SOFTWARE
   - Import-Module SQLServer
     - Install-Module -Name SqlServer -Repository PSGallery -Force
 
+> For MAC / Linux scripts it will use Bash script
+
 ## Data Collection
 The software may collect anonymous information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 
@@ -101,6 +103,40 @@ Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath 
  - Change variables
  - Execute the script
 
+
+### Option 4 MAC - This uses Bash Scrip
+
+ - Copy (Synapse-TestConnection-mac.sh) script file to a folder
+
+ - Change variable
+
+ ```
+ workspacename="REPLACEWORKSPACENAME"
+ ```
+
+ - Grant permission and Execute the script
+ ```
+ chmod +x Synapse-TestConnection-mac.sh
+
+./Synapse-TestConnection-mac.sh
+ ```
+
+### Option 4 Linux - This uses Bash Scrip
+
+ - Copy (Synapse-TestConnection-linux.sh) script file to a folder
+
+ - Change variable
+
+ ```
+ workspacename="REPLACEWORKSPACENAME"
+ ```
+
+ - Grant permission and Execute the script
+ ```
+chmod +x Synapse-TestConnection-linux.sh
+
+./Synapse-TestConnection-linux.sh
+ ```
 
 ## Contributing
 

@@ -5,7 +5,7 @@
     Author: Sergio Fonseca
     Twitter @FonsecaSergio
     Email: sergio.fonseca@microsoft.com
-    Last Updated: 2023-07-06
+    Last Updated: 2023-10-12
 
     ## Copyright (c) Microsoft Corporation.
     #Licensed under the MIT license.
@@ -72,7 +72,7 @@ Clear-Host
 
 ####################################################################################################################################################
 #LOG VERSIONS
-New-Variable -Name VERSION -Value "1.2" -Option Constant -ErrorAction Ignore
+New-Variable -Name VERSION -Value "1.3" -Option Constant -ErrorAction Ignore
 New-Variable -Name AnonymousRunId -Value ([guid]::NewGuid()).Guid -Option Constant -ErrorAction Ignore
 
 Write-Host ("Current version: " + $VERSION)
@@ -496,9 +496,9 @@ Class EndpointTest
 $EndpointTestList = @()
 
 $Endpoints = [ordered]@{
-    "$($WorkspaceName).sql.azuresynapse.net" = @(1433, 1443, 443)
-    "$($WorkspaceName)-ondemand.sql.azuresynapse.net" = @(1433, 1443, 443)
-    "$($WorkspaceName).database.windows.net" = @(1433, 1443, 443)
+    "$($WorkspaceName).sql.azuresynapse.net" = @(1433, 1443, 443, 11000)
+    "$($WorkspaceName)-ondemand.sql.azuresynapse.net" = @(1433, 1443, 443, 11000)
+    "$($WorkspaceName).database.windows.net" = @(1433, 1443, 443, 11000)
     "$($WorkspaceName).dev.azuresynapse.net" = @(443)
     "web.azuresynapse.net" = @(443)
     "management.azure.com" = @(443)
@@ -845,6 +845,9 @@ foreach ($EndpointTest in $EndpointTestList)
 
 Write-Host "  ----------------------------------------------------------------------------"
 Write-Host "  PORTS OPEN (Used CX DNS or Host File entry listed above)"
+Write-Host "   - INFO:: 11000 port is tested as a generic test to see if this port is open, the destination server will be different, and we cannot know before actual connection and it will depend if you are using redirect mode" -ForegroundColor DarkBlue
+Write-Host "     - MORE INFO AT :: https://learn.microsoft.com/en-us/azure/azure-sql/database/connectivity-architecture?view=azuresql#connectivity-from-within-azure" -ForegroundColor DarkBlue
+
 
 $isAnyPortClosed = $false
 foreach ($EndpointTest in $EndpointTestList)

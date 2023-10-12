@@ -41,7 +41,8 @@
                  - Updated MAC version also
                  - Aligned version from linux with Windows version
                  # Version 1.2 RELEASED #
-                 
+    - 2023-10-12 - added 11000 port test. Not ideal test, but may help on some scenarios if testing redirect connection
+                 # Version 1.3 RELEASED #                
 
 # KNOW ISSUES / TO DO
     - Sign code
