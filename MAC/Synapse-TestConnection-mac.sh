@@ -25,7 +25,7 @@ DisableAnonymousTelemetry=false
 #Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 
 ############################################################################################
-version="1.3"
+version="1.4"
 hostsfilepath="/etc/hosts"
 
 
@@ -43,78 +43,17 @@ Cyan='\033[0;36m'         # Cyan
 White='\033[0;37m'        # White
 
 ############################################################################################
-if [ "$(uname)" == "Darwin" ]; then
-    OS="MACOS"
-elif [ "$(uname)" == "Linux" ]; then
-    OS="LINUX"
-else
-    OS="OTHER"
-fi
-
-# Get the Linux distribution name
-get_distribution_name() {
-    if [ -f "/etc/os-release" ]; then
-        # Try to retrieve the distribution name from /etc/os-release
-        distribution_name=$(grep -oP '(?<=^NAME=").*?(?=")' /etc/os-release)
-        echo "$distribution_name"
-        return
-    fi
-
-    if [ -f "/etc/lsb-release" ]; then
-        # Try to retrieve the distribution name from /etc/lsb-release
-        distribution_name=$(grep -oP '(?<=^DISTRIB_ID=).*' /etc/lsb-release | tr -d '="')
-        echo "$distribution_name"
-        return
-    fi
-
-    if [ -f "/etc/redhat-release" ]; then
-        # If /etc/redhat-release exists, it is likely a Red Hat-based distribution
-        echo "Red Hat-based"
-        return
-    fi
-
-    # If no specific distribution information is found, output "Unknown"
-    echo "Unknown"
-}
-
-# Get the Linux version
-get_linux_version() {
-    if [ -f "/etc/os-release" ]; then
-        # Try to retrieve the version from /etc/os-release
-        OSversion=$(grep -oP '(?<=^VERSION_ID=").*?(?=")' /etc/os-release)
-        echo "$OSversion"
-        return
-    fi
-
-    if [ -f "/etc/lsb-release" ]; then
-        # Try to retrieve the version from /etc/lsb-release
-        OSversion=$(grep -oP '(?<=^DISTRIB_RELEASE=).*' /etc/lsb-release | tr -d '="')
-        echo "$OSversion"
-        return
-    fi
-
-    if [ -f "/etc/redhat-release" ]; then
-        # If /etc/redhat-release exists, extract the version from the file
-        OSversion=$(sed -E 's/[^0-9.]//g' /etc/redhat-release)
-        echo "$OSversion"
-        return
-    fi
-
-    # If no specific version information is found, output "Unknown"
-    echo "Unknown"
-}
 
 # Main script
-distribution=$(get_distribution_name)
-OSversion=$(get_linux_version)
+
+mac_version=$(sw_vers -productVersion)
 
 
 echo -e "${Cyan}------------------------------------------------------------------------------------"
 echo -e "Azure Synapse Connectivity Checker"
 echo -e " - Version: $version"
-echo -e " - OS: $OS"
-echo -e "   - Distribution: $distribution"
-echo -e "   - Version: $OSversion"
+echo -e " - OS: MAC"
+echo -e "   - Mac Version: $mac_version"
 echo -e " - Workspacename: $workspacename"
 echo -e "------------------------------------------------------------------------------------"
 echo -e "Bash Version"
@@ -177,7 +116,7 @@ fi
 
 
 # Example usage:
-message="Version: $version - $OS - $distribution"
+message="Edition: Synapse - Version: $version - SO: MAC - $mac_version"
 logEvent "$message"
 
 print_hostfileentries() {

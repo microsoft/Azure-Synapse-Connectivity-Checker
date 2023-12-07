@@ -1,6 +1,6 @@
 # Project
 
-Script to test Synapse connectivity endpoints and ports needed
+Script to test Synapse / Fabric connectivity endpoints and ports needed
 
  - Check name resolution for all possible endpoints used by Synapse
  - Check if ports needed are open (1433 / 1443 / 443)
@@ -11,15 +11,35 @@ Script to test Synapse connectivity endpoints and ports needed
    - Make API test calls to apis like management.azure.com / https://WORKSPACE.dev.azuresynapse.net
    - Try to connect to SQL and SQLOndemand APIs using port 1433
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE
+> [!NOTE]
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE
 
-## Requirements
+
+> 
+
+# Table of Contents
+1. [Requirements](#requirements)
+2. [Execution](#execution)
+   - [Option1 - Test Synapse from Windows Running from Web](#option1)
+   - [Option2 - Test Synapse from Windows Offline Version](#option2)
+   - [Option3 - Test Synapse from Windows Automation script](#option3)
+   - [Option4 - Test Synapse from MAC Offline Version](#option4)
+   - [Option5 - Test Synapse from Linux Offline Version](#option5)
+   - [Option6 - Test Fabric from Windows Running from Web](#option6)
+   - [Option7 - Teste Fabric from Windows Offline Version](#option7)
+
+> 
+
+# Requirements <a name="requirements"></a>
+
+## Requirements - Synapse Edition - Windows 
+  - Min Powershell V5.0
   - If want to run as script, might need
     - Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
   - Import-Module DnsClient
@@ -28,14 +48,25 @@ SOFTWARE
   - Import-Module SQLServer
     - Install-Module -Name SqlServer -Repository PSGallery -Force
 
-> For MAC / Linux scripts it will use Bash script
+## Requirements - Synapse Edition - MAC / Linux
+ - For MAC / Linux scripts it will use Bash script
+
+## Requirements - Fabric Edition - Windows
+  - Min Powershell V5.0
+  - If want to run as script, might need
+    - Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
+  - Import-Module DnsClient
+  - SQLCMD 
+    - https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver16&tabs=odbc%2Cwindows&pivots=cs1-powershell#download-and-install-sqlcmd
+
+
 
 ## Data Collection
 The software may collect anonymous information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
 
-## Execution
+# Execution <a name="execution"></a>
 
-### Option 1 - Execute last version directly from WEB (Require internet connection)
+## Option 1 (Synapse-Windows-Web) - Execute last version directly from WEB (Require internet connection)<a name="option1"></a>
 
  - Open Powershell ISE copy below script 
 
@@ -68,7 +99,7 @@ catch {
 
 
 
-### Option 2 - Download and Run
+## Option 2 (Synapse-Windows-Offline) - Download, change parameters and run <a name="option2"></a>
  - Open Powershell ISE
  - Copy / Past content of script (Synapse-TestConnection.ps1)
  - Change variables
@@ -81,7 +112,7 @@ catch {
  ```
   - Execute the script
 
-### Option 3 - Run locally but with parameters (Best when need to run multiple times / automation)
+## Option 3 (Synapse-Windows-Automation) - Run locally but with parameters (Best when need to run multiple times / automation) <a name="option3"></a>
 
  - Copy (Synapse-TestConnection.ps1) script file to a folder
 
@@ -104,7 +135,7 @@ Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath 
  - Execute the script
 
 
-### Option 4 MAC - This uses Bash Scrip
+## Option 4 (Synapse-MAC-Offline) - This uses Bash Script <a name="option4"></a>
 
  - Copy (Synapse-TestConnection-mac.sh) script file to a folder
 
@@ -121,7 +152,7 @@ Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath 
 ./Synapse-TestConnection-mac.sh
  ```
 
-### Option 4 Linux - This uses Bash Scrip
+## Option 5 (Synapse-Linux-Offline) - This uses Bash Script <a name="option5"></a>
 
  - Copy (Synapse-TestConnection-linux.sh) script file to a folder
 
@@ -137,6 +168,51 @@ chmod +x Synapse-TestConnection-linux.sh
 
 ./Synapse-TestConnection-linux.sh
  ```
+
+
+## Option 6 (Fabric-Windows-Web) - Execute last version directly from WEB (Require internet connection) <a name="option6"></a>
+
+ - Open Powershell ISE copy below script 
+
+ ```Powershell
+ProgressPreference = "SilentlyContinue";
+$parameters = @{
+	FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
+	AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
+	DatabaseName = "master" # Enter your Database Name
+	DisableAnonymousTelemetry = $false # Set as $true if you don't want to send anonymous usage data to Microsoft
+}
+$scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Fabric/Fabric-TestConnection.ps1'
+cls
+Write-Host 'Trying to download the script file from GitHub (https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/), please wait...'
+try {
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+	Invoke-Command -ScriptBlock ([Scriptblock]::Create((Invoke-WebRequest ($scriptUrl) -UseBasicParsing -TimeoutSec 60).Content)) -ArgumentList $parameters
+}
+catch {
+	Write-Host 'ERROR: The script file could not be downloaded:' -ForegroundColor Red
+	$_.Exception
+	Write-Host 'Confirm this machine can access https://github.com/microsoft/Azure-Synapse-Connectivity-Checker/' -ForegroundColor Yellow
+	Write-Host 'or use a machine with Internet access to see how to run this from machines without Internet.' -ForegroundColor Yellow
+      }
+ ```
+
+ - Change variables
+ - Execute the script
+
+ ## Option 7 (Fabric-Windows-Offline) - Download, change parameters and run <a name="option7"></a>
+
+ - Open Powershell ISE
+ - Copy / Past content of script (Synapse-TestConnection.ps1)
+ - Change variables
+ ```Powershell
+	$FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
+	$AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
+	$DatabaseName = "master" # Enter your Database Name
+	$DisableAnonymousTelemetry = $false # Set as $true if you don't want to send anonymous usage data to Microsoft 
+ ```
+  - Execute the script
+
 
 ## Contributing
 

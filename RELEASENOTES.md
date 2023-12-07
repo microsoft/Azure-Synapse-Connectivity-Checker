@@ -42,7 +42,11 @@
                  - Aligned version from linux with Windows version
                  # Version 1.2 RELEASED #
     - 2023-10-12 - added 11000 port test. Not ideal test, but may help on some scenarios if testing redirect connection
-                 # Version 1.3 RELEASED #                
+                 # Version 1.3 RELEASED #
+    - 2023-11-29 - Added Fabric test connection script
+                 - Added Another test to get internet proxy settings (added netsh, reading registry could fail because of lack of permission and not detect)
+                 # Version 1.4 RELEASED #                 
 
 # KNOW ISSUES / TO DO
     - Sign code
+    - On Fabric script using SQLCMD instead of Invoke-sqlcmd to use Interactive Login
