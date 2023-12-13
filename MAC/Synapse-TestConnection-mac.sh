@@ -2,12 +2,12 @@
 
 # Azure Synapse Test Connection - MacOS Version
 # Tested on 
-#  - MACOS Ventura 13.4.1
+#  - MACOS Ventura 14.1.2
 
 # Author: Sergio Fonseca
 # Twitter @FonsecaSergio
 # Email: sergio.fonseca@microsoft.com
-# Last Updated: 2023-10-12
+# Last Updated: 2023-12-13
 
 ## Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
@@ -17,8 +17,15 @@
 #WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+# Known issue
+#  ERROR: bad interpreter: /bin/bash^M: no such file or directory
+#  CAUSE: Windows line ending
+#  FIX. : Run command: sed -i -e 's/\r$//' Synapse-TestConnection-mac.sh
+#  REF. : https://stackoverflow.com/questions/14219092/bash-script-bin-bashm-bad-interpreter-no-such-file-or-directory
+
+
 # Define the workspace name
-workspacename="REPLACEWORKSPACENAME"
+workspacename="WORKSPACENAME"
 
 # Set as true if you don't want to send anonymous usage data to Microsoft
 DisableAnonymousTelemetry=false

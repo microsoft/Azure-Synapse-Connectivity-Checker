@@ -152,6 +152,16 @@ Invoke-Command -ScriptBlock ([Scriptblock]::Create((Get-Content -Path $FilePath 
 ./Synapse-TestConnection-mac.sh
  ```
 
+
+> [!NOTE]
+>  Known issue
+>   - ERROR: bad interpreter: /bin/bash^M: no such file or directory
+>   - CAUSE: Windows line ending
+>   - FIX. : Run command: sed -i -e 's/\r$//' Synapse-TestConnection-mac.sh
+>   - REF. : https://stackoverflow.com/questions/14219092/bash-script-bin-bashm-bad-interpreter-no-such-file-or-directory
+
+
+
 ## Option 5 (Synapse-Linux-Offline) - This uses Bash Script <a name="option5"></a>
 
  - Copy (Synapse-TestConnection-linux.sh) script file to a folder
