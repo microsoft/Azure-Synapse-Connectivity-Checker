@@ -32,7 +32,7 @@ Script to test Synapse / Fabric connectivity endpoints and ports needed
    - [Option4 - Test Synapse from MAC Offline Version](#option4)
    - [Option5 - Test Synapse from Linux Offline Version](#option5)
    - [Option6 - Test Fabric from Windows Running from Web](#option6)
-   - [Option7 - Teste Fabric from Windows Offline Version](#option7)
+   - [Option7 - Test Fabric from Windows Offline Version](#option7)
 
 > 
 
