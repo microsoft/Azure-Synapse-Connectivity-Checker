@@ -5,7 +5,7 @@
     Author: Sergio Fonseca
     Twitter @FonsecaSergio
     Email: sergio.fonseca@microsoft.com
-    Last Updated: 2023-12-07
+    Last Updated: 2024-02-21
 
     ## Copyright (c) Microsoft Corporation.
     #Licensed under the MIT license.
@@ -71,7 +71,7 @@ Clear-Host
 
 ####################################################################################################################################################
 #LOG VERSIONS
-New-Variable -Name VERSION -Value "1.4" -Option Constant -ErrorAction Ignore
+New-Variable -Name VERSION -Value "1.5" -Option Constant -ErrorAction Ignore
 New-Variable -Name AnonymousRunId -Value ([guid]::NewGuid()).Guid -Option Constant -ErrorAction Ignore
 
 Write-Host ("Edition: Fabric") 

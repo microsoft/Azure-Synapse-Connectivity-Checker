@@ -45,8 +45,10 @@
                  # Version 1.3 RELEASED #
     - 2023-11-29 - Added Fabric test connection script
                  - Added Another test to get internet proxy settings (added netsh, reading registry could fail because of lack of permission and not detect)
-                 # Version 1.4 RELEASED #                 
+                 # Version 1.4 RELEASED #
+    - 2024-02-21 - Removed test on port 11000. Not working as test for redirect. Better use https://github.com/Azure/SQL-Connectivity-Checker for that
+                 # Version 1.5 RELEASED #
 
 # KNOW ISSUES / TO DO
     - Sign code
-    - On Fabric script using SQLCMD instead of Invoke-sqlcmd to use Interactive Login
+    - Create a good way to test port 11000 without making real connection as TR is dynamic
