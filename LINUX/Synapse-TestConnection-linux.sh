@@ -209,7 +209,7 @@ print_port_status() {
     tcpClient=$(nc -v -z -w "$timeout" "$endpoint" "$port" 2>&1)
 
     # Check if the port is open
-    if [[ "$tcpClient" == *succeeded* ]] || [[ "$tcpClient" == *Connected* ]]; then
+    if [[ "$tcpClient" == *succeeded* ]] || [[ "$tcpClient" == *Connected* ]] || [[ "$tcpClient" == *open* ]]; then
         echo -e "${Green} > Port $port on $endpoint is open${Color_Off}"
     else
         echo -e "${Red} > Port $port on $endpoint is closed${Color_Off}"
