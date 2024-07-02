@@ -62,7 +62,9 @@ Script to test Synapse / Fabric connectivity endpoints and ports needed
 
 
 ## Data Collection
-The software may collect anonymous information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+**No data is sent to Microsoft by running this script**
+
+But you can send the results back to Microsoft or attach in a support case for further troubleshooting
 
 # Execution <a name="execution"></a>
 
@@ -76,8 +78,7 @@ $parameters = @{
 	WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
 	SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
 	DedicatedSQLPoolDBName = ''  
-	ServerlessPoolDBName = ''  
-	DisableAnonymousTelemetry = $false  
+	ServerlessPoolDBName = '' 
 }
 $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Synapse-TestConnection.ps1'
 cls
@@ -108,7 +109,6 @@ catch {
 - $SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
 - $DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
 - $ServerlessPoolDBName = ''    # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-- $DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
  ```
   - Execute the script
 
@@ -124,7 +124,6 @@ $parameters = @{
 	SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
 	DedicatedSQLPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
 	ServerlessPoolDBName = ''  # Add here DB name you are testing connection. If you keep it empty it will test connectivity agains master DB
-	DisableAnonymousTelemetry = $false  # Set as $true if you don't want to send anonymous usage data to Microsoft
 }
 
 $FilePath = 'C:\TEMP\Synapse-TestConnection.ps1'
@@ -190,7 +189,6 @@ $parameters = @{
 	FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
 	AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
 	DatabaseName = "master" # Enter your Database Name
-	DisableAnonymousTelemetry = $false # Set as $true if you don't want to send anonymous usage data to Microsoft
 }
 $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Fabric/Fabric-TestConnection.ps1'
 cls
@@ -219,7 +217,6 @@ catch {
 	$FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
 	$AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
 	$DatabaseName = "master" # Enter your Database Name
-	$DisableAnonymousTelemetry = $false # Set as $true if you don't want to send anonymous usage data to Microsoft 
  ```
   - Execute the script
 

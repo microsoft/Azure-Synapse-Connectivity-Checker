@@ -7,7 +7,7 @@
 # Author: Sergio Fonseca
 # Twitter @FonsecaSergio
 # Email: sergio.fonseca@microsoft.com
-# Last Updated: 2024-02-21
+# Last Updated: 2024-07-02
 
 ## Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
@@ -27,12 +27,8 @@
 # Define the workspace name
 workspacename="WORKSPACENAME"
 
-# Set as true if you don't want to send anonymous usage data to Microsoft
-DisableAnonymousTelemetry=false
-#Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
-
 ############################################################################################
-version="1.5"
+version="1.6"
 hostsfilepath="/etc/hosts"
 
 
@@ -92,40 +88,6 @@ done
 
 
 ############################################################################################
-logEvent() {
-    Message=$1
-    AnonymousRunId=$(uuidgen)
-
-    if [[ $DisableAnonymousTelemetry != true ]]; then
-        InstrumentationKey="d94ff6ec-feda-4cc9-8d0c-0a5e6049b581"
-        time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-        tags="{\"ai.user.id\": \"$AnonymousRunId\"}"
-        baseType="EventData"
-        ver=2
-
-        body="{\"name\": \"$Message\", \"time\": \"$time\", \"iKey\": \"$InstrumentationKey\", \"tags\": $tags, \"data\": {\"baseType\": \"$baseType\", \"baseData\": {\"ver\": $ver, \"name\": \"$Message\"}}}"
-
-        # Wrap the curl command in a try-catch block
-if response=$(curl -s -X POST \
-                -H "Content-Type: application/json" \
-                -d "$body" \
-                "https://dc.services.visualstudio.com/v2/track" 2>&1); then
-    echo "Anonymous telemetry sent: $response"
-    
-else
-    echo "Failed to send telemetry: $response"
-fi
-
-    else
-        echo "Anonymous Telemetry is disabled" >&2
-    fi
-}
-
-
-# Example usage:
-message="Edition: Synapse - Version: $version - SO: MAC - $mac_version"
-logEvent "$message"
-
 print_hostfileentries() {
     local hosts_file="$1"
     #sed -e 's/#.*//' -e 's/[[:blank:]]*$//' -e '/^$/d' "$hosts_file"

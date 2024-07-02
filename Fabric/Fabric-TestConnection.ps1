@@ -5,7 +5,7 @@
     Author: Sergio Fonseca
     Twitter @FonsecaSergio
     Email: sergio.fonseca@microsoft.com
-    Last Updated: 2024-02-21
+    Last Updated: 2024-07-02
 
     ## Copyright (c) Microsoft Corporation.
     #Licensed under the MIT license.
@@ -46,10 +46,6 @@ $FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net"
 $AADUser = "xxxx@domain.com"
 $DatabaseName = "master"
 
-# Optional parameters (default values will be used if omitted)
-$DisableAnonymousTelemetry = $true  # Set as $true if you don't want to send anonymous usage data to Microsoft
-#Data Collection. The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
-
 
 # Parameter region when Invoke-Command is used
 $parameters = $args[0]
@@ -58,7 +54,6 @@ if ($null -ne $parameters) {
     $FabricEndpoint = $parameters['FabricEndpoint']
     $AADUser = $parameters['AADUser']
     $DatabaseName = $parameters['DatabaseName']    
-    $DisableAnonymousTelemetry = $parameters['DisableAnonymousTelemetry']
 }
 
 if([string]::IsNullOrEmpty($FabricEndpoint) -or $FabricEndpoint -eq "xxxx-xxxx.datawarehouse.pbidedicated.windows.net") 
@@ -71,7 +66,7 @@ Clear-Host
 
 ####################################################################################################################################################
 #LOG VERSIONS
-New-Variable -Name VERSION -Value "1.5" -Option Constant -ErrorAction Ignore
+New-Variable -Name VERSION -Value "1.6" -Option Constant -ErrorAction Ignore
 New-Variable -Name AnonymousRunId -Value ([guid]::NewGuid()).Guid -Option Constant -ErrorAction Ignore
 
 Write-Host ("Edition: Fabric") 
@@ -80,118 +75,7 @@ Write-Host ("PS version: " + $psVersionTable.PSVersion)
 Write-Host ("PS OS version: " + $psVersionTable.OS)
 Write-Host ("System.Environment OS version: " + [System.Environment]::OSVersion.Platform)
 Write-Host ("FabricEndpoint: " + $FabricEndpoint)
-####################################################################################################################################################
 
-
-
-
-####################################################################################################################################################
-#region Telemetry
-
-
-<#
-.SYNOPSIS
-Sends a ANONYMOUS TELEMETRY event to Azure Application Insights.
-
-.DESCRIPTION
-The logEvent function sends a custom event to Azure Application Insights. The event contains a message and an anonymous run ID. If the anonymous run ID is not provided, a new GUID is generated.
-
-.PARAMETER Message
-The message to be included in the event.
-
-.PARAMETER AnonymousRunId
-The anonymous run ID to be included in the event. If not provided, a new GUID is generated.
-
-.EXAMPLE
-logEvent -Message "This is a test message" -AnonymousRunId "12345"
-
-#>
-function logEvent {
-    param (
-        [String]$Message,
-        [String]$AnonymousRunId = ([guid]::NewGuid()).Guid
-    )
-
-    if (!$DisableAnonymousTelemetry) 
-    {
-        try {
-            $InstrumentationKey = "d94ff6ec-feda-4cc9-8d0c-0a5e6049b581"        
-            $body = New-Object PSObject `
-            | Add-Member -PassThru NoteProperty name 'Microsoft.ApplicationInsights.Event' `
-            | Add-Member -PassThru NoteProperty time $([System.dateTime]::UtcNow.ToString('o')) `
-            | Add-Member -PassThru NoteProperty iKey $InstrumentationKey `
-            | Add-Member -PassThru NoteProperty tags (New-Object PSObject | Add-Member -PassThru NoteProperty 'ai.user.id' $AnonymousRunId) `
-            | Add-Member -PassThru NoteProperty data (New-Object PSObject `
-                | Add-Member -PassThru NoteProperty baseType 'EventData' `
-                | Add-Member -PassThru NoteProperty baseData (New-Object PSObject `
-                    | Add-Member -PassThru NoteProperty ver 2 `
-                    | Add-Member -PassThru NoteProperty name $Message));
-            $body = $body | ConvertTo-JSON -depth 5;
-            Invoke-WebRequest -Uri 'https://dc.services.visualstudio.com/v2/track' -ErrorAction SilentlyContinue -Method 'POST' -UseBasicParsing -body $body > $null
-        }
-        catch {
-            #Do nothing
-    
-            #Write-Host "ERROR ($($_.Exception))"
-        }                   
-    }
-    else {
-        write-host "Anonymous Telemetry is disabled" -ForegroundColor Yellow
-    }
-}
-
-$Message = "Edition: Fabric - Version: " + $VERSION + " - SO: Windows"
-logEvent -Message $Message -AnonymousRunId $AnonymousRunId
-
-####################################################################################################################################################
-<#
-.SYNOPSIS
-Sends a ANONYMOUS TELEMETRY event to Azure Application Insights.
-
-.DESCRIPTION
-The logEvent function sends a custom event to Azure Application Insights. The event contains a message and an anonymous run ID. If the anonymous run ID is not provided, a new GUID is generated.
-
-.PARAMETER Message
-The message to be included in the event.
-
-.PARAMETER AnonymousRunId
-The anonymous run ID to be included in the event. If not provided, a new GUID is generated.
-
-.EXAMPLE
-logEvent -Message "This is a test message" -AnonymousRunId "12345"
-
-#>
-
-#NEED TO BE DONE
-function logException
-{
-    param (
-        [String]$Message,
-        [String]$AnonymousRunId = ([guid]::NewGuid()).Guid
-    )
-    try {
-        $InstrumentationKey = "d94ff6ec-feda-4cc9-8d0c-0a5e6049b581"        
-        $body = New-Object PSObject `
-        | Add-Member -PassThru NoteProperty name 'Microsoft.ApplicationInsights.Event' `
-        | Add-Member -PassThru NoteProperty time $([System.dateTime]::UtcNow.ToString('o')) `
-        | Add-Member -PassThru NoteProperty iKey $InstrumentationKey `
-        | Add-Member -PassThru NoteProperty tags (New-Object PSObject | Add-Member -PassThru NoteProperty 'ai.user.id' $AnonymousRunId) `
-        | Add-Member -PassThru NoteProperty data (New-Object PSObject `
-            | Add-Member -PassThru NoteProperty baseType 'EventData' `
-            | Add-Member -PassThru NoteProperty baseData (New-Object PSObject `
-                | Add-Member -PassThru NoteProperty ver 2 `
-                | Add-Member -PassThru NoteProperty name $Message));
-        $body = $body | ConvertTo-JSON -depth 5;
-        Invoke-WebRequest -Uri 'https://dc.services.visualstudio.com/v2/track' -ErrorAction SilentlyContinue -Method 'POST' -UseBasicParsing -body $body > $null
-    }
-    catch {
-        #Do nothing
-
-        #Write-Host "ERROR ($($_.Exception))"
-    }        
-}
-
-#endregion Telemetry
 
 ####################################################################################################################################################
 #CHECK IF MACHINE IS WINDOWS

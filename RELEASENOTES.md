@@ -48,7 +48,8 @@
                  # Version 1.4 RELEASED #
     - 2024-02-21 - Removed test on port 11000. Not working as test for redirect. Better use https://github.com/Azure/SQL-Connectivity-Checker for that
                  # Version 1.5 RELEASED #
-
+    - 2024-07-02 - Removed telemetry data collection
+                 # Version 1.6 RELEASED #
 # KNOW ISSUES / TO DO
     - Sign code
     - Create a good way to test port 11000 without making real connection as TR is dynamic
