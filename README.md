@@ -208,7 +208,7 @@ catch {
  ## Option 7 (Fabric-Windows-Offline) - Download, change parameters and run <a name="option7"></a>
 
  - Open Powershell ISE
- - Copy / Past content of script (Fabric-TestConnection.ps1)
+ - Copy / Paste content of script (Fabric-TestConnection.ps1)
  - Change variables
  ```Powershell
 	$FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
