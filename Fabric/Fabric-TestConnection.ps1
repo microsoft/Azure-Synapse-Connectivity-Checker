@@ -1419,7 +1419,7 @@ SELECT
     @@SERVERNAME                                  AS srv,
     SUSER_SNAME()                                 AS login_name,
     GETUTCDATE()                                  AS utc,
-    CONVERT(nvarchar(36), CONNECTIONPROPERTY('client_net_address')) AS client_ip,
+    CONVERT(nvarchar(64), CONNECTIONPROPERTY('client_net_address')) AS client_ip,
     (SELECT TOP 1 CONVERT(nvarchar(36), c.connection_id)
        FROM sys.dm_exec_connections c
       WHERE c.session_id = @@SPID)                AS connection_id
