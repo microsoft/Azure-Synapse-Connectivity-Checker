@@ -50,6 +50,9 @@
                  # Version 1.5 RELEASED #
     - 2024-07-02 - Removed telemetry data collection
                  # Version 1.6 RELEASED #
+    - 2026-06-03 - Improved Fabric connection test including redirect endpoint and simpler TLS test
+                 # Version 1.7 RELEASED #
+
 # KNOW ISSUES / TO DO
     - Sign code
     - Create a good way to test port 11000 without making real connection as TR is dynamic
