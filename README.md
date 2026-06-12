@@ -71,7 +71,7 @@ But you can send the results back to Microsoft or attach in a support case for f
  - Open Powershell ISE copy below script 
 
  ```Powershell
-ProgressPreference = "SilentlyContinue";
+$ProgressPreference = "SilentlyContinue";
 $parameters = @{
 	WorkspaceName = 'WORKSPACENAME' # Enter your Synapse Workspace name. Not FQDN just name
 	SubscriptionID = 'de41dc76-xxxx-xxxx-xxxx-xxxx'  # Subscription ID where Synapse Workspace is located
@@ -182,10 +182,10 @@ chmod +x Synapse-TestConnection-linux.sh
  - Open Powershell ISE copy below script 
 
  ```Powershell
-ProgressPreference = "SilentlyContinue";
+$ProgressPreference = "SilentlyContinue";
 $parameters = @{
-	$FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
-  $WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
+	FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
+	WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
 }
 $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Fabric/Fabric-TestConnection.ps1'
 cls
@@ -212,7 +212,7 @@ catch {
  - Change variables
  ```Powershell
 	$FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
-  $WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
+	$WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
  ```
   - Execute the script
 
