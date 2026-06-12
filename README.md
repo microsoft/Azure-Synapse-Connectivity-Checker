@@ -56,8 +56,6 @@ Script to test Synapse / Fabric connectivity endpoints and ports needed
   - If want to run as script, might need
     - Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
   - Import-Module DnsClient
-  - SQLCMD 
-    - https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver16&tabs=odbc%2Cwindows&pivots=cs1-powershell#download-and-install-sqlcmd
 
 
 
@@ -186,9 +184,8 @@ chmod +x Synapse-TestConnection-linux.sh
  ```Powershell
 ProgressPreference = "SilentlyContinue";
 $parameters = @{
-	FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
-	AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
-	DatabaseName = "master" # Enter your Database Name
+	$FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
+  $WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
 }
 $scriptUrl = 'https://raw.githubusercontent.com/microsoft/Azure-Synapse-Connectivity-Checker/main/Fabric/Fabric-TestConnection.ps1'
 cls
@@ -211,12 +208,11 @@ catch {
  ## Option 7 (Fabric-Windows-Offline) - Download, change parameters and run <a name="option7"></a>
 
  - Open Powershell ISE
- - Copy / Past content of script (Synapse-TestConnection.ps1)
+ - Copy / Paste content of script (Fabric-TestConnection.ps1)
  - Change variables
  ```Powershell
-	$FabricEndpoint = "xxxx-xxxx.datawarehouse.pbidedicated.windows.net" # Enter your Fabric SQL Endpoint
-	$AADUser = "xxxx@domain.com" # AAD user that will be used to authenticate
-	$DatabaseName = "master" # Enter your Database Name
+	$FabricEndpoint = "xxxx-xxxx.datawarehouse.fabric.microsoft.com" # Enter your Fabric SQL Endpoint
+  $WorkspaceID = "xxxxxxxxxxxxxxxxxx" # You can get id from Fabric URL like https://app.fabric.microsoft.com/groups/<WORKSPACEID>/mirroredwarehouses/xxxxxxx?experience=power-bi
  ```
   - Execute the script
 
